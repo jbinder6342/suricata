@@ -110,6 +110,7 @@ void FlowInit(Flow *f, Packet *p)
 
     f->proto = p->proto;
     f->recursion_level = p->recursion_level;
+    f->vlan_id = p->vlan_id;
 
     if (PKT_IS_IPV4(p)) {
         FLOW_SET_IPV4_SRC_ADDR_FROM_PACKET(p, &f->src);

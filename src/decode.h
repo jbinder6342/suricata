@@ -375,6 +375,8 @@ typedef struct Packet_
 
     uint8_t pkt_src;
 
+    uint16_t vlan_id;
+
     struct Flow_ *flow;
 
     struct timeval ts;
@@ -644,6 +646,7 @@ typedef struct DecodeThreadVars_
         (p)->flags = 0;                         \
         (p)->flowflags = 0;                     \
         (p)->pkt_src = 0;                       \
+        (p)->vlan_id = 0;                       \
         FlowDeReference(&((p)->flow));          \
         (p)->ts.tv_sec = 0;                     \
         (p)->ts.tv_usec = 0;                    \

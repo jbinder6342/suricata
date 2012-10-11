@@ -68,6 +68,8 @@ void DecodeVLAN(ThreadVars *tv, DecodeThreadVars *dtv, Packet *p, uint8_t *pkt, 
     SCLogDebug("p %p pkt %p VLAN protocol %04x VLAN PRI %d VLAN CFI %d VLAN ID %d Len: %" PRId32 "",
         p, pkt, GET_VLAN_PROTO(p->vlanh), GET_VLAN_PRIORITY(p->vlanh), GET_VLAN_CFI(p->vlanh), GET_VLAN_ID(p->vlanh), len);
 
+    p->vlan_id = (uint16_t)GET_VLAN_ID(p->vlanh);
+
     switch (GET_VLAN_PROTO(p->vlanh))   {
         case ETHERNET_TYPE_IP:
             DecodeIPV4(tv, dtv, p, pkt + VLAN_HEADER_LEN,

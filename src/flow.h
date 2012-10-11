@@ -280,6 +280,7 @@ typedef struct Flow_
     };
     uint8_t proto;
     uint8_t recursion_level;
+    uint16_t vlan_id;
 
     /* end of flow "header" */
 
