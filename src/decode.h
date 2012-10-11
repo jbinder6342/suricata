@@ -367,6 +367,9 @@ typedef struct Packet_
      * has the exact same tuple as the lower levels */
     uint8_t recursion_level;
 
+    uint16_t vlan_id[2];
+    uint8_t vlan_idx;
+
     /* Pkt Flags */
     uint32_t flags;
 
@@ -441,7 +444,7 @@ typedef struct Packet_
 
     GREHdr *greh;
 
-    VLANHdr *vlanh;
+    VLANHdr *vlanh[2];
 
     /* ptr to the payload of the packet
      * with it's length. */
@@ -644,6 +647,9 @@ typedef struct DecodeThreadVars_
         (p)->flags = 0;                         \
         (p)->flowflags = 0;                     \
         (p)->pkt_src = 0;                       \
+        (p)->vlan_id[0] = 0;                    \
+        (p)->vlan_id[1] = 0;                    \
+        (p)->vlan_idx = 0;                      \
         FlowDeReference(&((p)->flow));          \
         (p)->ts.tv_sec = 0;                     \
         (p)->ts.tv_usec = 0;                    \
@@ -679,7 +685,8 @@ typedef struct DecodeThreadVars_
         (p)->pppoesh = NULL;                    \
         (p)->pppoedh = NULL;                    \
         (p)->greh = NULL;                       \
-        (p)->vlanh = NULL;                      \
+        (p)->vlanh[0] = NULL;                   \
+        (p)->vlanh[1] = NULL;                   \
         (p)->payload = NULL;                    \
         (p)->payload_len = 0;                   \
         (p)->pktlen = 0;                        \
