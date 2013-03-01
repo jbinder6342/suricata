@@ -194,6 +194,7 @@
 #include "util-proto-name.h"
 #include "util-spm-bm.h"
 #include "util-storage.h"
+#include "host-storage.h"
 
 /*
  * we put this here, because we only use it here in main.
@@ -1718,6 +1719,7 @@ int main(int argc, char **argv)
         SCAtomicRegisterTests();
 
         StorageRegisterTests();
+        RegisterHostStorageTests();
 
         if (list_unittests) {
             UtListTests(regex_arg);
