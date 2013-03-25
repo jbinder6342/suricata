@@ -1593,7 +1593,8 @@ int SigMatchSignatures(ThreadVars *th_v, DetectEngineCtx *de_ctx, DetectEngineTh
             if (s->action & ACTION_DROP)
                 alert_flags |= PACKET_ALERT_FLAG_DROP_FLOW;
 
-            alert_flags |= PACKET_ALERT_FLAG_STATE_MATCH;
+            if (PKT_IS_TCP(p))
+                alert_flags |= PACKET_ALERT_FLAG_STATE_MATCH;
         }
 
         /* match! */
