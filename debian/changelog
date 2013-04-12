@@ -1,0 +1,5 @@
+suricata (1.4.1-cyos1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Jim Binder <jbinder@unknown>  Wed, 27 Mar 2013 08:47:49 -0700

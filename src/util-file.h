@@ -67,6 +67,7 @@ typedef struct File_ {
     int16_t state;
     uint64_t size;                  /**< size tracked so far */
     char *magic;
+	char *magicMimeType;
     FileData *chunks_head;
     FileData *chunks_tail;
     struct File_ *next;

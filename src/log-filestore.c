@@ -38,6 +38,7 @@
 #include "detect-filemagic.h"
 
 #include "stream.h"
+#include "string.h" 
 
 #include "util-print.h"
 #include "util-unittest.h"
@@ -70,6 +71,9 @@ static void LogFilestoreLogDeInitCtx(OutputCtx *);
 SC_ATOMIC_DECLARE(unsigned int, file_id);
 static char g_logfile_base_dir[PATH_MAX] = "/tmp";
 static char g_waldo[PATH_MAX] = "";
+
+
+#define LOG_HTTP_CF_NONE "-"
 
 void TmModuleLogFilestoreRegister (void) {
     tmm_modules[TMM_FILESTORE].name = MODULE_NAME;
@@ -104,10 +108,263 @@ static void CreateTimeString (const struct timeval *ts, char *str, size_t size) 
             t->tm_min, t->tm_sec, (uint32_t) ts->tv_usec);
 }
 
+static void log_tx(htp_connp_t *connp, htp_tx_t *tx) {
+
+	if ( connp && tx ) {
+		char *request_line = bstr_tocstr(tx->request_line);
+		htp_header_t *h_user_agent = table_getc(tx->request_headers, "user-agent");
+		htp_header_t *h_referer = table_getc(tx->request_headers, "referer");
+		char *referer, *user_agent;
+		char buf[256];
+
+		time_t t = time(NULL);
+		struct tm *tmp = localtime(&t);
+
+		strftime(buf, 255, "%d/%b/%Y:%T %z", tmp);
+
+		if (h_user_agent == NULL) user_agent = strdup("-");
+		else {
+			user_agent = bstr_tocstr(h_user_agent->value);
+		}
+
+		if (h_referer == NULL) referer = strdup("-");
+		else {
+			referer = bstr_tocstr(h_referer->value);
+		}
+
+		SCLogInfo("from: %s -- [%s] \"%s\" %i %i \"%s\" \"%s\"\n", 
+		          connp->conn->remote_addr, 
+		          buf,
+		          request_line, 
+		          (int) tx->response_status_number, 
+		          (int) tx->response_message_len,
+		          referer, 
+		          user_agent);
+
+		free(referer);
+		free(user_agent);
+		free(request_line);
+	}
+}
+
+/**
+ *  \internal
+ *  \brief Write meta data on a single line json record
+ */
+static void LogFileWriteHttpJsonRecord(FILE *fp, char *prefix, char *line, table_t *http_headers) {
+
+	assert(line);
+	assert(http_headers); 
+
+	SCLogInfo("prefix[%d]=%s", (int) strlen(prefix), prefix );
+
+	if (strlen(prefix) == 8 ) 
+		fprintf(fp, "%s%s%-6s", prefix, "_LINE", ":"); 
+	else
+		fprintf(fp, "%s%s%-5s", prefix, "_LINE", ":"); 
+
+	PrintRawUriFp(fp, (uint8_t *) line, (uint32_t) strlen(line)); 
+	fprintf(fp, "\r\n"); 
+
+	if (strlen(prefix) == 8 ) 
+		fprintf(fp, "%s%s%-6s", prefix, "_JSON", ":"); 
+	else
+		fprintf(fp, "%s%s%-5s", prefix, "_JSON", ":"); 
+
+	// open json 
+	fprintf(fp, "{ ");
+	bstr *key = NULL;
+	htp_header_t *h = NULL;
+	int tsize = table_size(http_headers); 
+
+	table_iterator_reset(http_headers);
+
+	SCLogInfo("begin tablesize=%d", tsize );
+
+	int i = 0; //number 
+	while ((key = table_iterator_next(http_headers, (void **) & h)) != NULL) {
+		//char *tbuf; 
+
+		char *row_key = bstr_tocstr(h->name);
+		char *row_value = bstr_tocstr(h->value);
+		SCLogInfo("\"%s\": \"%s\", ", row_key, row_value);
+
+		fprintf(fp, "\""); 
+		// key to lowercase to be safe. 
+		PrintRawJsonFp(fp, (uint8_t *)bstr_ptr(bstr_tolowercase(h->name)),
+		               bstr_len(h->name));
+		
+		fprintf(fp, "\" : \""); 
+
+		// tbuf  = bstr_tocstr(h->value);
+
+		PrintRawJsonFp(fp, (uint8_t *)bstr_ptr(h->value),
+		                bstr_len(h->value));
+
+		// free (tbuf); 
+
+		// end of table yet? 
+		if ( i < ( tsize - 1) ) {
+			fprintf(fp, "\", "); 
+		} else {
+			fprintf(fp, "\" "); 
+		}
+
+		//free(row_value);
+		//free(row_key);
+		i++; 
+	}
+		
+	// close json
+	fprintf(fp, "} ");
+
+	fflush(fp);
+	SCLogInfo("end tablesize=%d", tsize );
+}
+
+
+/**
+ *  \internal
+ *  \brief Write http req line and headers to two json records 
+ */
+static void LogFileWriteHttpReqJsonRecord(FILE *fp, Packet *p, File *ff) {
+
+	HtpState *htp_state = (HtpState *)p->flow->alstate;
+
+	/* htp_header_t *h_request_hdr = NULL; */
+	/* htp_header_t *h_response_hdr = NULL; */
+
+	if (htp_state != NULL) {
+		htp_tx_t *tx = list_get(htp_state->connp->conn->transactions, ff->txid);
+
+		if (tx && tx->request_line) {
+			char *request_line = bstr_tocstr(tx->request_line);
+
+			SCLogInfo("Log JSON HTTPReq='%s'", request_line );
+			LogFileWriteHttpJsonRecord(fp, "HTTP_REQ", request_line, tx->request_headers); 
+			fprintf(fp, "\n");
+			fflush(fp);
+		}
+	}
+}
+
+/**
+ *  \internal
+ *  \brief Write http req line and headers to two json records 
+ */
+static void LogFileWriteHttpRespJsonRecord(FILE *fp, Packet *p, File *ff) {
+
+	HtpState *htp_state = (HtpState *)p->flow->alstate;
+
+	/* htp_header_t *h_request_hdr = NULL; */
+	/* htp_header_t *h_response_hdr = NULL; */
+
+	if (htp_state != NULL) {
+		htp_tx_t *tx = list_get(htp_state->connp->conn->transactions, ff->txid);
+
+		if (tx && tx->response_line) {
+			char *response_line = bstr_tocstr(tx->response_line);
+
+			SCLogInfo("Log JSON HTTPResp='%s'", response_line );
+			LogFileWriteHttpJsonRecord(fp, "HTTP_RESP", response_line, tx->response_headers); 
+			fprintf(fp, "\n");
+			fflush(fp);
+		}
+	}
+}
+
+// note: see libhtp->htp.h->htp_tx_t for details on how to parse a http header
+// and libhtp->main.c for examples. 
+//
+void LogFilestoreMetaHttpReqHeaders(FILE *fp, Packet *p, File *ff)
+{
+	//HtpState *htp_state = (HtpState *)p->flow->alstate;
+
+    /* htp_header_t *h_request_hdr = NULL; */
+    /* htp_header_t *h_response_hdr = NULL; */
+
+	/* if (htp_state != NULL) { */
+	/* 	htp_tx_t *tx = list_get(htp_state->connp->conn->transactions, ff->txid); */
+
+	/* 	fprintf(fp, "%-18s ", "HTTP REQ RAW:"); */
+	/* 	bstr *raw = htp_tx_get_request_headers_raw(tx); */
+	/* 	PrintRawUriFp(fp, bstr_ptr(raw), bstr_len(raw)); */
+	/* 	fprintf(fp, "\n\r");  */
+	/* } */
+
+	LogFileWriteHttpReqJsonRecord(fp, p, ff); 
+}
+
+void LogFilestoreMetaHttpRespHeaders(FILE *fp, Packet *p, File *ff)
+{
+	//HtpState *htp_state = (HtpState *)p->flow->alstate;
+
+    /* htp_header_t *h_request_hdr = NULL; */
+    /* htp_header_t *h_response_hdr = NULL; */
+
+	/* if (htp_state != NULL) { */
+	/* 	htp_tx_t *tx = list_get(htp_state->connp->conn->transactions, ff->txid); */
+
+	/* 	bstr *raw = htp_tx_get_response_headers_raw(tx); */
+	/* 	printRawUriFp(fp, bstr_ptr(raw), bstr_len(raw)); */
+	/* } */
+
+	LogFileWriteHttpRespJsonRecord(fp, p, ff); 
+
+}
+
+void LogFilestoreMetaHttpReqmod(FILE *fp, Packet *p, File *ff)
+{
+	HtpState *htp_state = (HtpState *)p->flow->alstate;
+	if (htp_state != NULL) {
+		htp_tx_t *tx = list_get(htp_state->connp->conn->transactions, ff->txid);
+
+		if (tx && tx->request_method != NULL) {
+			PrintRawUriFp(fp, (uint8_t *)bstr_ptr(tx->request_method),
+			               bstr_len(tx->request_method));
+			return;
+		}
+	}
+
+	fprintf(fp, "<unknown>");
+}
+
+void LogFilestoreMetaHttpResponse(FILE *fp, Packet *p, File *ff)
+{
+	HtpState *htp_state = (HtpState *)p->flow->alstate;
+	if (htp_state != NULL) {
+		htp_tx_t *tx = list_get(htp_state->connp->conn->transactions, ff->txid);
+
+		if (tx && tx->response_status != NULL) {
+			PrintRawUriFp(fp, (uint8_t *)bstr_ptr(tx->response_status),
+			               bstr_len(tx->response_status));
+			/* Redirect? */
+			if (tx->response_headers != NULL &&
+			    tx->response_status_number > 300 &&
+			    tx->response_status_number < 303)
+			{
+				htp_header_t *h_location = table_getc(tx->response_headers, "location");
+				if (h_location != NULL) {
+					PrintRawUriFp(fp, (uint8_t *) "(",1 );
+					PrintRawUriFp(fp, (uint8_t *)bstr_ptr(h_location->value),
+					               bstr_len(h_location->value));
+					PrintRawUriFp(fp, (uint8_t *) ")",1 );
+				}
+			}
+			return;
+		}
+	}
+
+	fprintf(fp, "<unknown>");
+}
+
 static void LogFilestoreMetaGetUri(FILE *fp, Packet *p, File *ff) {
     HtpState *htp_state = (HtpState *)p->flow->alstate;
     if (htp_state != NULL) {
         htp_tx_t *tx = list_get(htp_state->connp->conn->transactions, ff->txid);
+
+        log_tx(htp_state->connp, tx ); 
+
         if (tx != NULL && tx->request_uri_normalized != NULL) {
             PrintRawUriFp(fp, (uint8_t *)bstr_ptr(tx->request_uri_normalized),
                     bstr_len(tx->request_uri_normalized));
@@ -193,6 +450,8 @@ static void LogFilestoreMetaGetUserAgent(FILE *fp, Packet *p, File *ff) {
 static void LogFilestoreLogCreateMetaFile(Packet *p, File *ff, char *filename, int ipver) {
     char metafilename[PATH_MAX] = "";
     snprintf(metafilename, sizeof(metafilename), "%s.meta", filename);
+
+    SCLogInfo("Create metafile='%s.meta'", filename );
     FILE *fp = fopen(metafilename, "w+");
     if (fp != NULL) {
         char timebuf[64];
@@ -230,6 +489,7 @@ static void LogFilestoreLogCreateMetaFile(Packet *p, File *ff, char *filename, i
             fprintf(fp, "SRC PORT:          %" PRIu16 "\n", sp);
             fprintf(fp, "DST PORT:          %" PRIu16 "\n", dp);
         }
+
         fprintf(fp, "HTTP URI:          ");
         LogFilestoreMetaGetUri(fp, p, ff);
         fprintf(fp, "\n");
@@ -246,6 +506,18 @@ static void LogFilestoreLogCreateMetaFile(Packet *p, File *ff, char *filename, i
         PrintRawUriFp(fp, ff->name, ff->name_len);
         fprintf(fp, "\n");
 
+        //cyphort... start
+		fprintf(fp, "%-18s ", "HTTP REQ METHOD:");
+		LogFilestoreMetaHttpReqmod(fp, p, ff);
+		fprintf(fp, "\n");
+		fprintf(fp, "%-18s ", "HTTP RESP CODE:");
+		LogFilestoreMetaHttpResponse(fp, p, ff);
+		fprintf(fp, "\n");
+
+		LogFilestoreMetaHttpReqHeaders(fp, p, ff);
+		LogFilestoreMetaHttpRespHeaders(fp, p, ff);
+        //cyphort... end
+
         fclose(fp);
     }
 }
@@ -255,6 +527,8 @@ static void LogFilestoreLogCloseMetaFile(File *ff) {
     snprintf(filename, sizeof(filename), "%s/file.%u",
             g_logfile_base_dir, ff->file_id);
     char metafilename[PATH_MAX] = "";
+
+    SCLogInfo("Close metafile='%s.meta'", filename );
     snprintf(metafilename, sizeof(metafilename), "%s.meta", filename);
     FILE *fp = fopen(metafilename, "a");
     if (fp != NULL) {
@@ -303,6 +577,28 @@ static TmEcode LogFilestoreLogWrap(ThreadVars *tv, Packet *p, void *data, Packet
     if (p->flow == NULL) {
         SCReturnInt(TM_ECODE_OK);
     }
+
+    /* // no alerts here to process for this stream.  */
+    /* if (p->alerts.cnt < 1) { */
+	/*     SCReturnInt(TM_ECODE_OK); */
+    /* } else { */
+	/*     int i = 0;  */
+	/*     char *action = ""; */
+	/*     for (i = 0; i < p->alerts.cnt; i++) { */
+	/* 	    PacketAlert *pa = &p->alerts.alerts[i]; */
+
+	/* 	    if (unlikely(pa->s == NULL)) { */
+	/* 		    continue; */
+	/* 	    } */
+
+	/* 	    if (pa->action & ACTION_DROP) { */
+	/* 		    action = "[Drop] "; */
+	/* 	    } else { */
+	/* 		    action = "[Alert] ";  */
+	/* 	    } */
+	/* 	    SCLogInfo("pa %p --> event action='%s'", pa, action ); */
+	/*     } */
+    /* } */
 
     if (p->flowflags & FLOW_PKT_TOCLIENT)
         flags |= STREAM_TOCLIENT;

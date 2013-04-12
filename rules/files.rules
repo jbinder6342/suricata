@@ -2,6 +2,10 @@
 #
 # For storing files make sure you enable the "file" output.
 # Also, make sure you read the comments that go with it in the suricata.yaml file.
+#
+# This version is maintained by the EMerging Threats Pro team. Noisy rules are disabled for a more real-world initial load.
+#
+# These are mostly all disabled. Choices on files to extract are very much local policy based. Use these as examples!
 
 # Alert on files with jpg or bmp extensions
 #alert http any any -> any any (msg:"FILEEXT JPG file claimed"; fileext:"jpg"; sid:1; rev:1;)
@@ -12,7 +16,7 @@
 #alert http any any -> any any (msg:"FILESTORE pdf"; flow:established,to_server; fileext:"pdf"; filestore; sid:8; rev:1;)
 
 # Store all PDF files, regardless of their name.
-#alert http any any -> any any (msg:"FILEMAGIC pdf"; flow:established,to_server; filemagic:"PDF document"; filestore; sid:9; rev:1;)
+#alert http any any -> any any (msg:"FILEMAGIC pdf"; flow:established; filemagic:"PDF document"; filestore; sid:9; rev:1;)
 
 # Same for JPEG's.
 #alert http any any -> any any (msg:"FILEMAGIC jpg(1)"; flow:established,to_server; filemagic:"JPEG image data"; filestore; sid:10; rev:1;)
@@ -26,7 +30,7 @@
 
 # Store all JPG files, don't alert.
 #alert http any any -> any any (msg:"FILE magic"; filemagic:"JFIF"; filestore; noalert; sid:16; rev:1;)
-#alert http any any -> any any (msg:"FILE magic"; filemagic:"GIF"; filestore; noalert; sid:16; rev:1;)
+#alert http any any -> any any (msg:"FILE magic"; filemagic:"GIF"; filestore; noalert; sid:23; rev:2;)
 #alert http any any -> any any (msg:"FILE magic"; filemagic:"PNG"; filestore; noalert; sid:17; rev:1;)
 
 # Store all Windows executables
@@ -43,3 +47,23 @@
 # Alert and store pdf attachment but not pdf file
 #alert http any any -> any any (msg:"FILE pdf claimed, but not pdf"; flow:established,to_client; fileext:"pdf"; filemagic:!"PDF document"; filestore; sid:22; rev:1;)
 
+#*****************************
+# cyos: Store all "application types" 
+#alert http any any -> any any (msg:"FILE store all"; flow:established; filestore; sid:1; rev:10000;)
+
+alert http any any -> any any (msg:"FILE EXE file claimed"; fileext:"exe"; filestore; sid:10002; rev:1;)
+alert http any any -> any any (msg:"FILE PDF file claimed"; fileext:"pdf"; filestore; sid:10003; rev:1;)
+alert http any any -> any any (msg:"FILE SWF file claimed"; fileext:"swf"; filestore; sid:10004; rev:1;)
+
+alert http any any -> any any (msg:"FILE PE32 detected"; flow:established; filemagic:"PE32"; filestore; sid:11005; rev:1;)
+alert http any any -> any any (msg:"FILE PDF detected"; flow:established; filemagic:"PDF document"; filestore; sid:11006; rev:1;)
+alert http any any -> any any (msg:"FILE Flash detected"; flow:established; filemagic:"Macromedia*Flash*"; filestore; sid:11004; rev:1;)
+
+alert http any any -> any any (msg:"FILE magicType -- applicaiton";  filemagic:"application/"; flow:established; filestore; sid:12000; rev:1;)
+alert http any any -> any any (msg:"FILE magicType -- application/javascript"; flow:established; filemagic:"application/javascript"; filestore; sid:12001; rev:1;)
+alert http any any -> any any (msg:"FILE magicType -- application/x-javascript"; flow:established; filemagic:"application/x-javascript"; filestore; sid:12002; rev:1;)
+alert http any any -> any any (msg:"FILE magicType -- text/javascript"; flow:established; filemagic:"text/html"; filestore; sid:12003; rev:1;)
+alert http any any -> any any (msg:"FILE magicType -- text/html"; flow:established; filemagic:"text/html"; filestore; sid:12004; rev:1;)
+
+alert http any any -> any any (msg:"FILE magicType -- application/dosexec detected"; flow:established; filemagic:"application/dosexec"; filestore; sid:13001; rev:1;)
+alert http any any -> any any (msg:"FILE magicType -- application/x-dosexec detected"; flow:established; filemagic:"application/x-dosexec"; filestore; sid:13002; rev:1;)

@@ -99,6 +99,8 @@ char *MagicGlobalLookup(uint8_t *buf, uint32_t buflen) {
 
     SCMutexLock(&g_magic_lock);
 
+    magic_setflags(g_magic_ctx, MAGIC_NONE );
+
     if (buf != NULL && buflen > 0) {
         result = magic_buffer(g_magic_ctx, (void *)buf, (size_t)buflen);
         if (result != NULL) {
@@ -109,6 +111,35 @@ char *MagicGlobalLookup(uint8_t *buf, uint32_t buflen) {
         }
     }
 
+    SCMutexUnlock(&g_magic_lock);
+    SCReturnPtr(magic, "const char");
+}
+
+/**
+ *  \brief Find the magic value for a buffer.
+ *
+ *  \param buf the buffer
+ *  \param buflen length of the buffer
+ *
+ *  \retval result pointer to null terminated string
+ */
+char *MagicMimeTypeGlobalLookup(uint8_t *buf, uint32_t buflen) {
+    const char *result = NULL;
+    char *magic = NULL;
+
+    SCMutexLock(&g_magic_lock);
+
+    magic_setflags(g_magic_ctx, MAGIC_MIME_TYPE );
+    if (buf != NULL && buflen > 0) {
+        result = magic_buffer(g_magic_ctx, (void *)buf, (size_t)buflen);
+        if (result != NULL) {
+            magic = SCStrdup(result);
+            if (magic == NULL) {
+                SCLogError(SC_ERR_MEM_ALLOC, "Unable to dup magic");
+            }
+        }
+    }
+    magic_setflags(g_magic_ctx, MAGIC_NONE );
     SCMutexUnlock(&g_magic_lock);
     SCReturnPtr(magic, "const char");
 }
@@ -135,6 +166,32 @@ char *MagicThreadLookup(magic_t *ctx, uint8_t *buf, uint32_t buflen) {
         }
     }
 
+    SCReturnPtr(magic, "const char");
+}
+
+/**
+ *  \brief Find the magic value for a buffer.
+ *
+ *  \param buf the buffer
+ *  \param buflen length of the buffer
+ *
+ *  \retval result pointer to null terminated string
+ */
+char *MagicMimeTypeThreadLookup(magic_t *ctx, uint8_t *buf, uint32_t buflen) {
+    const char *result = NULL;
+    char *magic = NULL;
+
+    magic_setflags(*ctx, MAGIC_MIME_TYPE );
+    if (buf != NULL && buflen > 0) {
+        result = magic_buffer(*ctx, (void *)buf, (size_t)buflen);
+        if (result != NULL) {
+            magic = SCStrdup(result);
+            if (magic == NULL) {
+                SCLogError(SC_ERR_MEM_ALLOC, "Unable to dup magic");
+            }
+        }
+    }
+    magic_setflags(*ctx, MAGIC_NONE );
     SCReturnPtr(magic, "const char");
 }
 

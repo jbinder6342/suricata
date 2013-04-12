@@ -1,0 +1,58 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+export DEB_BUILD_MAINT_OPTIONS=hardening=+pie,+bindnow
+
+#nss_libs=nss3 nssutil3 smime3 ssl3 plds4 plc4 nspr4 
+nss_libs="$(shell pkg-config --variable=libdir nss) "
+nss_includes=$(shell pkg-config --variable=includedir nss)
+
+MOD_NAME=$(notdir $(CURDIR))
+DESTDIR=$(CURDIR)/debian/suricata
+
+# from 1.2.1 
+#CONFIGURE_ARGS = --enable-af-packet --enable-nfqueue --enable-prelude \
+#	--enable-non-bundled-htp --enable-gccprotect --disable-gccmarch-native
+
+CONFIGURE_ARGS = --enable-af-packet --enable-nfqueue --enable-prelude \
+	--enable-gccprotect --disable-gccmarch-native --enable-debug #\
+#	--with-libnss-includes="$(nss_includes)" -with-libnss-libraries="$(nss_libs)"
+
+override_dh_auto_configure:
+	dh_auto_configure -- $(CONFIGURE_ARGS)
+# from 1.2.1 
+	# sed \
+	# 	-e 's|^default-rule-path: .*$$|default-rule-path: /etc/snort/rules|' \
+	# 	 suricata.yaml > suricata-debian.yaml
+
+override_dh_clean:
+# from 1.2.1 
+#	rm -f suricata-debian.yaml
+	dh_clean
+
+# don't strip for now. 
+override_dh_strip: 
+	#dh_strip 
+
+# 
+override_dh_install: 
+	$(info CURDIR=$(CURDIR), DESTDIR=$(DESTDIR), MOD_NAME=$(MOD_NAME))
+	$(MAKE) DESTDIR=$(pwd)$(DESTDIR) install install-conf install-rules 
+
+override_dh_auto_install: 
+	$(info CURDIR=$(CURDIR), DESTDIR=$(DESTDIR), MOD_NAME=$(MOD_NAME))
+	dh_auto_install
+	# dh_auto_install --destdir=$(DESTDIR) 
+
+%:
+	dh  $@ --parallel --with autoreconf
+
+

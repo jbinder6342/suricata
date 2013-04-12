@@ -16,22 +16,23 @@ install-data-am:
 install-full: install install-conf install-rules
 
 install-conf:
-	install -d "$(e_sysconfdir)"
-	@test -e "$(e_sysconfdir)/suricata.yaml" || install -m 600 "$(top_srcdir)/suricata.yaml" "$(e_sysconfdir)"
-	@test -e "$(e_sysconfdir)/classification.config" || install -m 600 "$(top_srcdir)/classification.config" "$(e_sysconfdir)"
-	@test -e "$(e_sysconfdir)/reference.config" || install -m 600 "$(top_srcdir)/reference.config" "$(e_sysconfdir)"
-	@test -e "$(e_sysconfdir)/threshold.config" || install -m 600 "$(top_srcdir)/threshold.config" "$(e_sysconfdir)"
-	install -d "$(e_logfilesdir)"
-	install -d "$(e_rundir)"
-	install -m 770 -d "$(e_localstatedir)"
+	install -d "$(DESTDIR)$(e_sysconfdir)"
+	@test -e "$(DESTDIR)$(e_sysconfdir)/suricata.yaml" || install -m 600 "$(top_srcdir)/suricata.yaml" "$(DESTDIR)$(e_sysconfdir)"
+	@test -e "$(DESTDIR)$(e_sysconfdir)/classification.config" || install -m 600 "$(top_srcdir)/classification.config" "$(DESTDIR)$(e_sysconfdir)"
+	@test -e "$(DESTDIR)$(e_sysconfdir)/reference.config" || install -m 600 "$(top_srcdir)/reference.config" "$(DESTDIR)$(e_sysconfdir)"
+	@test -e "$(DESTDIR)$(e_sysconfdir)/threshold.config" || install -m 600 "$(top_srcdir)/threshold.config" "$(DESTDIR)$(e_sysconfdir)"
+	install -d "$(DESTDIR)$(e_logfilesdir)"
+	install -d "$(DESTDIR)$(e_rundir)"
+	install -m 770 -d "$(DESTDIR)$(e_localstatedir)"
 
 install-rules:
-	install -d "$(e_sysconfrulesdir)"
-	wget -qO - http://rules.emergingthreats.net/open/suricata/emerging.rules.tar.gz | tar -x -z -C "$(e_sysconfdir)" -f -
-	@test -e "$(e_sysconfrulesdir)decoder-events.rules" || install -m 600 "$(top_srcdir)/rules/decoder-events.rules" "$(e_sysconfrulesdir)"
-	@test -e "$(e_sysconfrulesdir)stream-events.rules" || install -m 600 "$(top_srcdir)/rules/stream-events.rules" "$(e_sysconfrulesdir)"
-	@test -e "$(e_sysconfrulesdir)smtp-events.rules" || install -m 600 "$(top_srcdir)/rules/smtp-events.rules" "$(e_sysconfrulesdir)"
-	@test -e "$(e_sysconfrulesdir)http-events.rules" || install -m 600 "$(top_srcdir)/rules/http-events.rules" "$(e_sysconfrulesdir)"
+	install -d "$(DESTDIR)$(e_sysconfrulesdir)"
+	wget -qO - http://rules.emergingthreats.net/open/suricata/emerging.rules.tar.gz | tar -x -z -C "$(DESTDIR)$(e_sysconfdir)" -f -
+	@test -e "$(DESTDIR)$(e_sysconfrulesdir)decoder-events.rules" || install -m 600 "$(top_srcdir)/rules/decoder-events.rules" "$(DESTDIR)$(e_sysconfrulesdir)"
+	@test -e "$(DESTDIR)$(e_sysconfrulesdir)stream-events.rules" || install -m 600 "$(top_srcdir)/rules/stream-events.rules" "$(DESTDIR)$(e_sysconfrulesdir)"
+	@test -e "$(DESTDIR)$(e_sysconfrulesdir)smtp-events.rules" || install -m 600 "$(top_srcdir)/rules/smtp-events.rules" "$(DESTDIR)$(e_sysconfrulesdir)"
+	@test -e "$(DESTDIR)$(e_sysconfrulesdir)http-events.rules" || install -m 600 "$(top_srcdir)/rules/http-events.rules" "$(DESTDIR)$(e_sysconfrulesdir)"
+#	@test -e "$(DESTDIR)$(e_sysconfrulesdir)http-filestore-events.rules" || install -m 600 "$(top_srcdir)/rules/http-filestore-events.rules" "$(DESTDIR)$(e_sysconfrulesdir)"
 	@echo ""
 	@echo "You can now start suricata by running as root something like '$(bindir)/suricata -c $(e_sysconfdir)/suricata.yaml -i eth0'."
 	@echo ""

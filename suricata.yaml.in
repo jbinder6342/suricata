@@ -70,14 +70,14 @@ outputs:
 
   # a line based alerts log similar to Snort's fast.log
   - fast:
-      enabled: yes
+      enabled: no
       filename: fast.log
       append: yes
       #filetype: regular # 'regular', 'unix_stream' or 'unix_dgram'
 
   # alert output for use with Barnyard2
   - unified2-alert:
-      enabled: yes
+      enabled: no
       filename: unified2.alert
 
       # File size limit.  Can be specified in kb, mb, gb.  Just a number
@@ -130,7 +130,8 @@ outputs:
 
       # File size limit.  Can be specified in kb, mb, gb.  Just a number
       # is parsed as bytes.
-      limit: 1000mb
+      #limit: 1000mb
+      limit: 5gb
 
       # If set to a value will enable ring buffer mode. Will keep Maximum of "max-files" of size "limit"
       max-files: 2000
@@ -192,11 +193,11 @@ outputs:
   # - http request / response body sizes. Again set to 0 for optimal results.
   # - rules that contain the "filestore" keyword.
   - file-store:
-      enabled: no       # set to yes to enable
+      enabled: yes       # set to yes to enable
       log-dir: files    # directory to store the files
-      force-magic: no   # force logging magic on all stored files
-      force-md5: no     # force logging of md5 checksums
-      #waldo: file.waldo # waldo file to store the file_id across runs
+      force-magic: yes   # force logging magic on all stored files
+      force-md5: yes     # force logging of md5 checksums
+      waldo: file.waldo # waldo file to store the file_id across runs
 
   # output module to log files tracked in a easily parsable json format
   - file-log:
@@ -204,9 +205,8 @@ outputs:
       filename: files-json.log
       append: yes
       #filetype: regular # 'regular', 'unix_stream' or 'unix_dgram'
-
-      force-magic: no   # force logging magic on all logged files
-      force-md5: no     # force logging of md5 checksums
+      force-magic: yes   # force logging magic on all logged files
+      force-md5: yes     # force logging of md5 checksums
 
 # Magic file. The extension .mgc is added to the value here.
 #magic-file: /usr/share/file/magic
@@ -594,12 +594,14 @@ flow-timeouts:
 #                               # gb.  Just a number indicates it's in bytes.
 
 stream:
-  memcap: 32mb
-  checksum-validation: yes      # reject wrong csums
-  inline: auto                  # auto will use inline mode in IPS mode, yes or no set it statically
+  #memcap: 256mb
+  memcap: 1gb
+  checksum-validation: no      # reject wrong csums
+  inline: auto                    # no inline mode
   reassembly:
-    memcap: 64mb
-    depth: 1mb                  # reassemble 1mb into a stream
+    memcap: 256mb
+    #depth: 1mb                  # reassemble 1mb into a stream
+    depth: 0                  # reassemble 1mb into a stream (all)
     toserver-chunk-size: 2560
     toclient-chunk-size: 2560
 
@@ -642,7 +644,7 @@ logging:
   - console:
       enabled: yes
   - file:
-      enabled: no
+      enabled: yes
       filename: /var/log/suricata.log
   - syslog:
       enabled: no
@@ -748,55 +750,56 @@ ipfw:
 # if not set, it will look at the current working dir
 default-rule-path: @e_sysconfdir@rules
 rule-files:
- - botcc.rules
- - ciarmy.rules
- - compromised.rules
- - drop.rules
- - dshield.rules
- - emerging-activex.rules
- - emerging-attack_response.rules
- - emerging-chat.rules
- - emerging-current_events.rules
- - emerging-dns.rules
- - emerging-dos.rules
- - emerging-exploit.rules
- - emerging-ftp.rules
- - emerging-games.rules
- - emerging-icmp_info.rules
- - emerging-icmp.rules
- - emerging-imap.rules
- - emerging-inappropriate.rules
- - emerging-malware.rules
- - emerging-misc.rules
- - emerging-mobile_malware.rules
- - emerging-netbios.rules
- - emerging-p2p.rules
- - emerging-policy.rules
- - emerging-pop3.rules
- - emerging-rpc.rules
- - emerging-scada.rules
- - emerging-scan.rules
- - emerging-shellcode.rules
- - emerging-smtp.rules
- - emerging-snmp.rules
- - emerging-sql.rules
- - emerging-telnet.rules
- - emerging-tftp.rules
- - emerging-trojan.rules
- - emerging-user_agents.rules
- - emerging-virus.rules
- - emerging-voip.rules
- - emerging-web_client.rules
- - emerging-web_server.rules
- - emerging-web_specific_apps.rules
- - emerging-worm.rules
- - rbn-malvertisers.rules
- - rbn.rules
- - tor.rules
- - decoder-events.rules # available in suricata sources under rules dir
- - stream-events.rules  # available in suricata sources under rules dir
- - http-events.rules    # available in suricata sources under rules dir
- - smtp-events.rules    # available in suricata sources under rules dir
+ # - botcc.rules
+ # - ciarmy.rules
+ # - compromised.rules
+ # - drop.rules
+ # - dshield.rules
+ # - emerging-activex.rules
+ # - emerging-attack_response.rules
+ # - emerging-chat.rules
+ # - emerging-current_events.rules
+ # - emerging-dns.rules
+ # - emerging-dos.rules
+ # - emerging-exploit.rules
+ # - emerging-ftp.rules
+ # - emerging-games.rules
+ # - emerging-icmp_info.rules
+ # - emerging-icmp.rules
+ # - emerging-imap.rules
+ # - emerging-inappropriate.rules
+ # - emerging-malware.rules
+ # - emerging-misc.rules
+ # - emerging-mobile_malware.rules
+ # - emerging-netbios.rules
+ # - emerging-p2p.rules
+ # - emerging-policy.rules
+ # - emerging-pop3.rules
+ # - emerging-rpc.rules
+ # - emerging-scada.rules
+ # - emerging-scan.rules
+ # - emerging-shellcode.rules
+ # - emerging-smtp.rules
+ # - emerging-snmp.rules
+ # - emerging-sql.rules
+ # - emerging-telnet.rules
+ # - emerging-tftp.rules
+ # - emerging-trojan.rules
+ # - emerging-user_agents.rules
+ # - emerging-virus.rules
+ # - emerging-voip.rules
+ # - emerging-web_client.rules
+ # - emerging-web_server.rules
+ # - emerging-web_specific_apps.rules
+ # - emerging-worm.rules
+ # - rbn-malvertisers.rules
+ # - rbn.rules
+ # - tor.rules
+ # - decoder-events.rules # available in suricata sources under rules dir
+ # - stream-events.rules  # available in suricata sources under rules dir
+ # - http-events.rules    # available in suricata sources under rules dir
+ # - smtp-events.rules    # available in suricata sources under rules dir
+ - files.rules    # available in suricata sources under rules dir
 
 classification-file: @e_sysconfdir@classification.config
 reference-config-file: @e_sysconfdir@reference.config
@@ -840,7 +843,7 @@ vars:
   # These would be retrieved during the Signature port parsing stage.
   port-groups:
 
-    HTTP_PORTS: "80"
+    HTTP_PORTS: "80,8080"
 
     SHELLCODE_PORTS: "!80"
 
@@ -946,8 +949,11 @@ libhtp:
 
      # Can be specified in kb, mb, gb.  Just a number indicates
      # it's in bytes.
-     request-body-limit: 3072
-     response-body-limit: 3072
+     #request-body-limit: 3072
+     #response-body-limit: 3072
+     request-body-limit: 5mb
+     response-body-limit: 5mb
+
 
      # inspection limits
      request-body-minimal-inspect-size: 32kb
@@ -966,8 +972,11 @@ libhtp:
          personality: Apache_2_2
          # Can be specified in kb, mb, gb.  Just a number indicates
          # it's in bytes.
-         request-body-limit: 4096
-         response-body-limit: 4096
+         #request-body-limit: 4096
+         #response-body-limit: 4096
+         request-body-limit: 5mb
+         response-body-limit: 5mb
+
          double-decode-path: no
          double-decode-query: no
 
@@ -978,8 +987,10 @@ libhtp:
          personality: IIS_7_0
          # Can be specified in kb, mb, gb.  Just a number indicates
          # it's in bytes.
-         request-body-limit: 4096
-         response-body-limit: 4096
+         #request-body-limit: 4096
+         #response-body-limit: 4096
+         request-body-limit: 0
+         response-body-limit: 0
          double-decode-path: no
          double-decode-query: no
 

@@ -96,6 +96,7 @@ int FilemagicGlobalLookup(File *file) {
     /* initial chunk already matching our requirement */
     if (file->chunks_head->len >= FILEMAGIC_MIN_SIZE) {
         file->magic = MagicGlobalLookup(file->chunks_head->data, FILEMAGIC_MIN_SIZE);
+        file->magicMimeType = MagicMimeTypeGlobalLookup(file->chunks_head->data, FILEMAGIC_MIN_SIZE);
     } else {
         uint8_t *buf = SCMalloc(FILEMAGIC_MIN_SIZE);
         uint32_t size = 0;
@@ -113,11 +114,13 @@ int FilemagicGlobalLookup(File *file) {
 
                 if (size >= FILEMAGIC_MIN_SIZE) {
                     file->magic = MagicGlobalLookup(buf, size);
+                    file->magicMimeType = MagicMimeTypeGlobalLookup(buf, size);
                     break;
                 }
                 /* file is done but smaller than FILEMAGIC_MIN_SIZE */
                 if (ffd->next == NULL && file->state >= FILE_STATE_CLOSED) {
                     file->magic = MagicGlobalLookup(buf, size);
+                    file->magicMimeType = MagicMimeTypeGlobalLookup(buf, size);
                     break;
                 }
             }
@@ -145,6 +148,7 @@ int FilemagicThreadLookup(magic_t *ctx, File *file) {
     /* initial chunk already matching our requirement */
     if (file->chunks_head->len >= FILEMAGIC_MIN_SIZE) {
         file->magic = MagicThreadLookup(ctx, file->chunks_head->data, FILEMAGIC_MIN_SIZE);
+        file->magicMimeType = MagicMimeTypeThreadLookup(ctx, file->chunks_head->data, FILEMAGIC_MIN_SIZE);
     } else {
         uint8_t *buf = SCMalloc(FILEMAGIC_MIN_SIZE);
         uint32_t size = 0;
@@ -162,11 +166,13 @@ int FilemagicThreadLookup(magic_t *ctx, File *file) {
 
                 if (size >= FILEMAGIC_MIN_SIZE) {
                     file->magic = MagicThreadLookup(ctx, buf, size);
+                    file->magicMimeType = MagicMimeTypeThreadLookup(ctx, buf, size);
                     break;
                 }
                 /* file is done but smaller than FILEMAGIC_MIN_SIZE */
                 if (ffd->next == NULL && file->state >= FILE_STATE_CLOSED) {
                     file->magic = MagicThreadLookup(ctx, buf, size);
+                    file->magicMimeType = MagicMimeTypeThreadLookup(ctx, buf, size);
                     break;
                 }
             }
@@ -211,11 +217,13 @@ static int DetectFilemagicMatch (ThreadVars *t, DetectEngineThreadCtx *det_ctx,
     }
 
     if (file->magic == NULL) {
+	    // note;now will set both magic and magicMimeType type in file
         FilemagicThreadLookup(&tfilemagic->ctx, file);
     }
 
     if (file->magic != NULL) {
-        SCLogDebug("magic %s", file->magic);
+	    SCLogDebug("magic='%s', magicMimeType='%s'", file->magic, file->magicMimeType );
+	    //SCLogInfo("DetectFilemagicMatch() magic='%s', magicMimeType='%s'", file->magic, file->magicMimeType );
 
         /* we include the \0 in the inspection, so patterns can match on the
          * end of the string. */
@@ -224,6 +232,9 @@ static int DetectFilemagicMatch (ThreadVars *t, DetectEngineThreadCtx *det_ctx,
                     filemagic->bm_ctx->bmBc) != NULL)
         {
 #ifdef DEBUG
+	        SCLogDebug("DetectFilemagicMatch() name='%s', Match magic='%s', magicMimeType='%s'",
+	                  file->name != NULL ? (char *) file->name : "N/A", file->magic, file->magicMimeType );
+
             if (SCLogDebugEnabled()) {
                 char *name = SCMalloc(filemagic->len + 1);
                 if (name != NULL) {
@@ -235,11 +246,52 @@ static int DetectFilemagicMatch (ThreadVars *t, DetectEngineThreadCtx *det_ctx,
 #endif
 
             if (!(filemagic->flags & DETECT_CONTENT_NEGATED)) {
+	            SCLogInfo("DetectFilemagicMatch() name='%s', Match magic='%s', magicMimeType='%s'",
+	                      file->name != NULL ? (char *) file->name : "N/A", file->magic, file->magicMimeType );
                 ret = 1;
             }
         } else if (filemagic->flags & DETECT_CONTENT_NEGATED) {
             SCLogDebug("negated match");
+            SCLogInfo("DetectFilemagicMatch() NEGATE name='%s', Match magic='%s', magicMimeType='%s'",
+                      file->name != NULL ? (char *) file->name : "N/A", file->magic, file->magicMimeType );
             ret = 1;
+        }
+
+        // Have found anything yet? 
+        if ( ret == 0 ) { 
+	        // OR what's in the mime verison of the magic type.
+
+	        /* we include the \0 in the inspection, so patterns can match on the
+	         * end of the string. */
+	        if (BoyerMooreNocase(filemagic->name, filemagic->len, (uint8_t *)file->magicMimeType,
+	                             strlen(file->magicMimeType) + 1, filemagic->bm_ctx->bmGs,
+	                             filemagic->bm_ctx->bmBc) != NULL)
+	        {
+#ifdef DEBUG
+		        SCLogDebug("DetectFilemagicMatch() file=%s, Match magicMimeType='%s', magic='%s'",
+		                  file->name != NULL ? (char *) file->name : "N/A", file->magicMimeType, file->magic );
+
+		        if (SCLogDebugEnabled()) {
+			        char *name = SCMalloc(filemagic->len + 1);
+			        if (name != NULL) {
+				        memcpy(name, filemagic->name, filemagic->len);
+				        name[filemagic->len] = '\0';
+				        SCLogDebug("will look for filemagic %s", name);
+			        }
+		        }
+#endif
+
+		        if (!(filemagic->flags & DETECT_CONTENT_NEGATED)) {
+			        SCLogInfo("DetectFilemagicMatch() file=%s, Match magicMimeType='%s', magic='%s'",
+			                  file->name != NULL ? (char *) file->name : "N/A", file->magicMimeType, file->magic );
+			        ret = 1;
+		        }
+	        } else if (filemagic->flags & DETECT_CONTENT_NEGATED) {
+		        SCLogDebug("negated match");
+		        SCLogInfo("DetectFilemagicMatch() NEGATE file=%s, Match magicMimeType='%s', magic='%s'",
+		                  file->name != NULL ? (char *) file->name : "N/A", file->magicMimeType, file->magic );
+		        ret = 1;
+	        }
         }
     }
 
