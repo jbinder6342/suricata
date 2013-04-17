@@ -246,13 +246,13 @@ static int DetectFilemagicMatch (ThreadVars *t, DetectEngineThreadCtx *det_ctx,
 #endif
 
             if (!(filemagic->flags & DETECT_CONTENT_NEGATED)) {
-	            SCLogInfo("DetectFilemagicMatch() name='%s', Match magic='%s', magicMimeType='%s'",
+	            SCLogDebug("DetectFilemagicMatch() name='%s', Match magic='%s', magicMimeType='%s'",
 	                      file->name != NULL ? (char *) file->name : "N/A", file->magic, file->magicMimeType );
                 ret = 1;
             }
         } else if (filemagic->flags & DETECT_CONTENT_NEGATED) {
             SCLogDebug("negated match");
-            SCLogInfo("DetectFilemagicMatch() NEGATE name='%s', Match magic='%s', magicMimeType='%s'",
+            SCLogDebug("DetectFilemagicMatch() NEGATE name='%s', Match magic='%s', magicMimeType='%s'",
                       file->name != NULL ? (char *) file->name : "N/A", file->magic, file->magicMimeType );
             ret = 1;
         }
@@ -282,13 +282,13 @@ static int DetectFilemagicMatch (ThreadVars *t, DetectEngineThreadCtx *det_ctx,
 #endif
 
 		        if (!(filemagic->flags & DETECT_CONTENT_NEGATED)) {
-			        SCLogInfo("DetectFilemagicMatch() file=%s, Match magicMimeType='%s', magic='%s'",
+			        SCLogDebug("DetectFilemagicMatch() file=%s, Match magicMimeType='%s', magic='%s'",
 			                  file->name != NULL ? (char *) file->name : "N/A", file->magicMimeType, file->magic );
 			        ret = 1;
 		        }
 	        } else if (filemagic->flags & DETECT_CONTENT_NEGATED) {
 		        SCLogDebug("negated match");
-		        SCLogInfo("DetectFilemagicMatch() NEGATE file=%s, Match magicMimeType='%s', magic='%s'",
+		        SCLogDebug("DetectFilemagicMatch() NEGATE file=%s, Match magicMimeType='%s', magic='%s'",
 		                  file->name != NULL ? (char *) file->name : "N/A", file->magicMimeType, file->magic );
 		        ret = 1;
 	        }

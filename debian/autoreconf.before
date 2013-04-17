@@ -135,7 +135,7 @@ fcde0087b514193bfb502a85a2d7e25a  ./qa/coccinelle/size_t.cocci
 97d2e07835b66fe41c393ff7445c63e9  ./qa/Makefile.am
 5a8475842fc263c185c0c1123e16b11f  ./.gitignore
 393a5ca445f6965873eca0259a17f833  ./COPYING
-91cfd1bb4f702e66b325c4566e146227  ./rules/files.rules
+8a0de504676812099b7db85787fef765  ./rules/files.rules
 711e675d1bb337dcbe271bba673e475b  ./rules/decoder-events.rules
 14dc2700da2f061aad9bd093457f57db  ./rules/http-events.rules
 ccff9849d4eeb162d90d9bc658351a07  ./rules/smtp-events.rules
@@ -344,7 +344,7 @@ dfce8b46aba37a0108b4838cda31dc58  ./src/detect-http-raw-uri.c
 6412414d7675b40f4c80553e07491114  ./src/util-mem.h
 9177e5fe95a9b68ffccbd0d47664bda4  ./src/util-spm-bm.h
 bc133c9beb39844a57b935bd33a2cd4f  ./src/detect.h
-c6425fa05d12e1ffb8ab63ad689185e9  ./src/detect-filemagic.c
+bd360845c5056816f34dd5e073677eca  ./src/detect-filemagic.c
 a52005b439c23b02bfb1897258fa7c8d  ./src/util-bloomfilter.c
 1b325506d419a679e2391aac30bb1f90  ./src/util-reference-config.c
 59d325ce7eb7a8da5a04ef45df84d6b6  ./src/tmqh-packetpool.h
@@ -566,7 +566,7 @@ c8a1c3ee66ea10bdb4c20323c1d1ff96  ./src/detect-app-layer-event.c
 7eb39acd4ca78819b01476224af2d4d7  ./src/detect-http-client-body.h
 e63d7c4fcb94b81b8138a6584422f80d  ./src/util-profiling.c
 b6d91fe843c4e7236554502881ebd595  ./src/tm-threads-common.h
-064fd4a718691137fb431d58f11c0cfe  ./src/log-filestore.c
+1ab38ebe8fb09c0eecce92e09a9e0c14  ./src/log-filestore.c
 992e628b5cff62847d76ecc0c9164dc3  ./src/detect-filename.c
 d27eb182a092a743b309ac1e1f7402ec  ./src/detect-asn1.c
 84aad3fa6322638d4bb5f021123205dc  ./src/alert-pcapinfo.c

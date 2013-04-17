@@ -108,7 +108,7 @@ static void CreateTimeString (const struct timeval *ts, char *str, size_t size) 
             t->tm_min, t->tm_sec, (uint32_t) ts->tv_usec);
 }
 
-static void log_tx(htp_connp_t *connp, htp_tx_t *tx) {
+static void log_tx(Packet *p, htp_connp_t *connp, htp_tx_t *tx, int ipver) {
 
 	if ( connp && tx ) {
 		char *request_line = bstr_tocstr(tx->request_line);
@@ -122,7 +122,8 @@ static void log_tx(htp_connp_t *connp, htp_tx_t *tx) {
 
 		strftime(buf, 255, "%d/%b/%Y:%T %z", tmp);
 
-		if (h_user_agent == NULL) user_agent = strdup("-");
+		if (h_user_agent == NULL) 
+			user_agent = strdup("-");
 		else {
 			user_agent = bstr_tocstr(h_user_agent->value);
 		}
@@ -132,8 +133,34 @@ static void log_tx(htp_connp_t *connp, htp_tx_t *tx) {
 			referer = bstr_tocstr(h_referer->value);
 		}
 
-		SCLogInfo("from: %s -- [%s] \"%s\" %i %i \"%s\" \"%s\"\n", 
-		          connp->conn->remote_addr, 
+        char srcip[46], dstip[46];
+        Port sp, dp;
+        switch (ipver) {
+            case AF_INET:
+                PrintInet(AF_INET, (const void *)GET_IPV4_SRC_ADDR_PTR(p), srcip, sizeof(srcip));
+                PrintInet(AF_INET, (const void *)GET_IPV4_DST_ADDR_PTR(p), dstip, sizeof(dstip));
+                break;
+            case AF_INET6:
+                PrintInet(AF_INET6, (const void *)GET_IPV6_SRC_ADDR(p), srcip, sizeof(srcip));
+                PrintInet(AF_INET6, (const void *)GET_IPV6_DST_ADDR(p), dstip, sizeof(dstip));
+                break;
+            default:
+                strlcpy(srcip, "<unknown>", sizeof(srcip));
+                strlcpy(dstip, "<unknown>", sizeof(dstip));
+                break;
+        }
+        if (PKT_IS_TCP(p) || PKT_IS_UDP(p)) {
+	        sp = p->sp;
+	        dp = p->dp;
+        }
+        else 
+        {
+	        sp = 0;
+	        dp = 0; 
+        }
+
+		SCLogInfo("dst: %s:%"PRIu16" <-- src: %s:%"PRIu16" -- [%s] \"%s\" %i %i \"%s\" \"%s\"\n", 
+		          dstip, dp, srcip, sp,
 		          buf,
 		          request_line, 
 		          (int) tx->response_status_number, 
@@ -156,7 +183,7 @@ static void LogFileWriteHttpJsonRecord(FILE *fp, char *prefix, char *line, table
 	assert(line);
 	assert(http_headers); 
 
-	SCLogInfo("prefix[%d]=%s", (int) strlen(prefix), prefix );
+	SCLogDebug("prefix[%d]=%s", (int) strlen(prefix), prefix );
 
 	if (strlen(prefix) == 8 ) 
 		fprintf(fp, "%s%s%-6s", prefix, "_LINE", ":"); 
@@ -179,7 +206,7 @@ static void LogFileWriteHttpJsonRecord(FILE *fp, char *prefix, char *line, table
 
 	table_iterator_reset(http_headers);
 
-	SCLogInfo("begin tablesize=%d", tsize );
+	SCLogDebug("begin tablesize=%d", tsize );
 
 	int i = 0; //number 
 	while ((key = table_iterator_next(http_headers, (void **) & h)) != NULL) {
@@ -187,7 +214,7 @@ static void LogFileWriteHttpJsonRecord(FILE *fp, char *prefix, char *line, table
 
 		char *row_key = bstr_tocstr(h->name);
 		char *row_value = bstr_tocstr(h->value);
-		SCLogInfo("\"%s\": \"%s\", ", row_key, row_value);
+		SCLogDebug("\"%s\": \"%s\", ", row_key, row_value);
 
 		fprintf(fp, "\""); 
 		// key to lowercase to be safe. 
@@ -219,7 +246,7 @@ static void LogFileWriteHttpJsonRecord(FILE *fp, char *prefix, char *line, table
 	fprintf(fp, "} ");
 
 	fflush(fp);
-	SCLogInfo("end tablesize=%d", tsize );
+	SCLogDebug("end tablesize=%d", tsize );
 }
 
 
@@ -240,7 +267,7 @@ static void LogFileWriteHttpReqJsonRecord(FILE *fp, Packet *p, File *ff) {
 		if (tx && tx->request_line) {
 			char *request_line = bstr_tocstr(tx->request_line);
 
-			SCLogInfo("Log JSON HTTPReq='%s'", request_line );
+			SCLogDebug("Log JSON HTTPReq='%s'", request_line );
 			LogFileWriteHttpJsonRecord(fp, "HTTP_REQ", request_line, tx->request_headers); 
 			fprintf(fp, "\n");
 			fflush(fp);
@@ -265,7 +292,7 @@ static void LogFileWriteHttpRespJsonRecord(FILE *fp, Packet *p, File *ff) {
 		if (tx && tx->response_line) {
 			char *response_line = bstr_tocstr(tx->response_line);
 
-			SCLogInfo("Log JSON HTTPResp='%s'", response_line );
+			SCLogDebug("Log JSON HTTPResp='%s'", response_line );
 			LogFileWriteHttpJsonRecord(fp, "HTTP_RESP", response_line, tx->response_headers); 
 			fprintf(fp, "\n");
 			fflush(fp);
@@ -358,12 +385,12 @@ void LogFilestoreMetaHttpResponse(FILE *fp, Packet *p, File *ff)
 	fprintf(fp, "<unknown>");
 }
 
-static void LogFilestoreMetaGetUri(FILE *fp, Packet *p, File *ff) {
+static void LogFilestoreMetaGetUri(FILE *fp, Packet *p, File *ff, int ipver) {
     HtpState *htp_state = (HtpState *)p->flow->alstate;
     if (htp_state != NULL) {
         htp_tx_t *tx = list_get(htp_state->connp->conn->transactions, ff->txid);
 
-        log_tx(htp_state->connp, tx ); 
+        log_tx(p, htp_state->connp, tx, ipver ); 
 
         if (tx != NULL && tx->request_uri_normalized != NULL) {
             PrintRawUriFp(fp, (uint8_t *)bstr_ptr(tx->request_uri_normalized),
@@ -491,7 +518,7 @@ static void LogFilestoreLogCreateMetaFile(Packet *p, File *ff, char *filename, i
         }
 
         fprintf(fp, "HTTP URI:          ");
-        LogFilestoreMetaGetUri(fp, p, ff);
+        LogFilestoreMetaGetUri(fp, p, ff, ipver );
         fprintf(fp, "\n");
         fprintf(fp, "HTTP HOST:         ");
         LogFilestoreMetaGetHost(fp, p, ff);

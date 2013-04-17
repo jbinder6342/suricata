@@ -59,7 +59,9 @@ alert http any any -> any any (msg:"FILE PE32 detected"; flow:established; filem
 alert http any any -> any any (msg:"FILE PDF detected"; flow:established; filemagic:"PDF document"; filestore; sid:11006; rev:1;)
 alert http any any -> any any (msg:"FILE Flash detected"; flow:established; filemagic:"Macromedia*Flash*"; filestore; sid:11004; rev:1;)
 
-alert http any any -> any any (msg:"FILE magicType -- applicaiton";  filemagic:"application/"; flow:established; filestore; sid:12000; rev:1;)
+# alert http any any -> any any (msg:"FILE magicType -- applicaiton";  filemagic:"application/"; flow:established; filestore; sid:12000; rev:1;)
+# example of excluding a domain. 
+alert http any any -> any any (msg:"FILE magicType -- applicaiton"; content:!"safebrowsing-cache.google.com"; nocase; http_header;  filemagic:"application/"; flow:established; filestore; sid:12000; rev:1;)  
 alert http any any -> any any (msg:"FILE magicType -- application/javascript"; flow:established; filemagic:"application/javascript"; filestore; sid:12001; rev:1;)
 alert http any any -> any any (msg:"FILE magicType -- application/x-javascript"; flow:established; filemagic:"application/x-javascript"; filestore; sid:12002; rev:1;)
 alert http any any -> any any (msg:"FILE magicType -- text/javascript"; flow:established; filemagic:"text/html"; filestore; sid:12003; rev:1;)
