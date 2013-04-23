@@ -685,13 +685,11 @@ static TmEcode LogFilestoreLogWrap(ThreadVars *tv, Packet *p, void *data, Packet
 
             SCLogDebug("ff %p", ff);
 
-            if (file_trunc && ff->state < FILE_STATE_CLOSED) {
-	            SCLogDebug("ff %p, ffc %p, WARNING; file_trunc=%d", 
-	                      ff, ffc, file_trunc);
-                ff->state = FILE_STATE_TRUNCATED;
-                LogFilestoreLogCloseMetaFile(ff);
-                continue; 
-            }
+            /* if (file_trunc && ff->state < FILE_STATE_CLOSED) { */
+	        /*     SCLogDebug("ff %p, ffc %p, WARNING; file_trunc=%d",  */
+	        /*               ff, ffc, file_trunc); */
+            /*     ff->state = FILE_STATE_TRUNCATED; */
+            /* } */
 
             if (ff->flags & FILE_STORED) {
                 SCLogDebug("stored flag set");
