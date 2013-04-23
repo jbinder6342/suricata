@@ -13,7 +13,7 @@
 # If you are using the CUDA pattern matcher (b2g_cuda below), different rules
 # apply. In that case try something like 4000 or more. This is because the CUDA
 # pattern matcher scans many packets in parallel.
-#max-pending-packets: 1024
+max-pending-packets: 4000
 
 # Runmode the engine should use. Please check --list-runmodes to get the available
 # runmodes for each packet acquisition method. Defaults to "autofp" (auto flow pinned
@@ -33,9 +33,9 @@
 #autofp-scheduler: active-packets
 
 # Run suricata as user and group.
-#run-as:
-#  user: suri
-#  group: suri
+run-as:
+  user: amauser
+  group: amauser
 
 # Default pid file.
 # Will use this file if no --pidfile in command options.
@@ -49,7 +49,8 @@
 # Preallocated size for packet. Default is 1514 which is the classical
 # size for pcap on ethernet. You should adjust this value to the highest
 # packet size (MTU + hardware header) on your system.
-#default-packet-size: 1514
+#default-packet-size: 65535
+default-packet-size: 1514
 
 # The default logging directory.  Any log or output file will be
 # placed here if its not specified with a full path name.  This can be
@@ -201,7 +202,7 @@ outputs:
 
   # output module to log files tracked in a easily parsable json format
   - file-log:
-      enabled: no
+      enabled: yes
       filename: files-json.log
       append: yes
       #filetype: regular # 'regular', 'unix_stream' or 'unix_dgram'
@@ -286,16 +287,28 @@ af-packet:
     #copy-mode: ips
     #copy-iface: eth1
   - interface: eth1
-    threads: 1
+    #threads: 2
     cluster-id: 98
     cluster-type: cluster_flow
     defrag: yes
     # buffer-size: 32768
     # disable-promisc: no
+    buffer-size: 256mb
+    #ring-size: 4096 
+    use-mmap: yes
+    checksum-checks: no
   # Put default values here
   - interface: default
     #threads: 2
-    #use-mmap: yes
+    cluster-id: 96
+    cluster-type: cluster_flow
+    defrag: yes
+    # buffer-size: 32768
+    # disable-promisc: no
+    buffer-size: 256mb
+    #ring-size: 4096 
+    use-mmap: yes
+    checksum-checks: no
 
 # You can specify a threshold config file by setting "threshold-file"
 # to the path of the threshold config file:
@@ -512,7 +525,7 @@ defrag:
 # in bytes.
 
 flow:
-  memcap: 32mb
+  memcap: 256mb
   hash-size: 65536
   prealloc: 10000
   emergency-recovery: 30
@@ -597,13 +610,13 @@ stream:
   #memcap: 256mb
   memcap: 1gb
   checksum-validation: no      # reject wrong csums
-  inline: auto                    # no inline mode
+  inline: no                    # no inline mode
   reassembly:
-    memcap: 256mb
+    memcap: 512mb
     #depth: 1mb                  # reassemble 1mb into a stream
-    depth: 0                  # reassemble 1mb into a stream (all)
-    toserver-chunk-size: 2560
-    toclient-chunk-size: 2560
+    depth: 10mb                  # reassemble 10mb into a stream
+    toserver-chunk-size: 4096
+    toclient-chunk-size: 4096
 
 # Host table:
 #
@@ -716,9 +729,21 @@ pcap:
     # set snaplen, if not set it defaults to MTU if MTU can be known
     # via ioctl call and to full capture if not.
     #snaplen: 1518
+    checksum-checks: no
+    snaplen: 65535
+    buffer-size: 512mb
   # Put default values here
+  - interface: eth1 
+    #threads: 2 
+    checksum-checks: no
+    snaplen: 65535
+    buffer-size: 512mb
   - interface: default
-    #checksum-checks: auto
+    #threads: 2 
+    checksum-checks: no
+    snaplen: 65535
+    buffer-size: 128mb
+
 
 # For FreeBSD ipfw(8) divert(4) support.
 # Please make sure you have ipfw_load="YES" and ipdivert_load="YES"
@@ -951,8 +976,8 @@ libhtp:
      # it's in bytes.
      #request-body-limit: 3072
      #response-body-limit: 3072
-     request-body-limit: 5mb
-     response-body-limit: 5mb
+     request-body-limit: 0
+     response-body-limit: 0
 
 
      # inspection limits
@@ -974,8 +999,8 @@ libhtp:
          # it's in bytes.
          #request-body-limit: 4096
          #response-body-limit: 4096
-         request-body-limit: 5mb
-         response-body-limit: 5mb
+         request-body-limit: 0
+         response-body-limit: 0
 
          double-decode-path: no
          double-decode-query: no

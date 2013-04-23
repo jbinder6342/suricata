@@ -478,7 +478,26 @@ static void LogFilestoreLogCreateMetaFile(Packet *p, File *ff, char *filename, i
     char metafilename[PATH_MAX] = "";
     snprintf(metafilename, sizeof(metafilename), "%s.meta", filename);
 
-    SCLogInfo("Create metafile='%s.meta'", filename );
+    char *file_state=NULL; 
+    switch (ff->state) {
+    case FILE_STATE_CLOSED:
+	    file_state="CLOSED"; 
+	    break;
+    case FILE_STATE_OPENED:
+	    file_state="OPENED"; 
+	    break;
+    case FILE_STATE_TRUNCATED:
+	    file_state="TRUNCATED"; 
+	    break;
+    case FILE_STATE_ERROR:
+	    file_state="ERROR"; 
+	    break;
+    default:
+	    file_state="<UNKNOWN>"; 
+	    break;
+        }
+    
+    SCLogInfo("Create metafile='%s.meta', filestate='%s'", filename, file_state );
     FILE *fp = fopen(metafilename, "w+");
     if (fp != NULL) {
         char timebuf[64];
@@ -543,6 +562,7 @@ static void LogFilestoreLogCreateMetaFile(Packet *p, File *ff, char *filename, i
 
 		LogFilestoreMetaHttpReqHeaders(fp, p, ff);
 		LogFilestoreMetaHttpRespHeaders(fp, p, ff);
+
         //cyphort... end
 
         fclose(fp);
@@ -554,8 +574,9 @@ static void LogFilestoreLogCloseMetaFile(File *ff) {
     snprintf(filename, sizeof(filename), "%s/file.%u",
             g_logfile_base_dir, ff->file_id);
     char metafilename[PATH_MAX] = "";
+    char *file_state=NULL;
 
-    SCLogInfo("Close metafile='%s.meta'", filename );
+    SCLogInfo("Close START metafile='%s.meta'", filename );
     snprintf(metafilename, sizeof(metafilename), "%s.meta", filename);
     FILE *fp = fopen(metafilename, "a");
     if (fp != NULL) {
@@ -565,6 +586,7 @@ static void LogFilestoreLogCloseMetaFile(File *ff) {
         switch (ff->state) {
             case FILE_STATE_CLOSED:
                 fprintf(fp, "STATE:             CLOSED\n");
+                file_state="CLOSED";
 #ifdef HAVE_NSS
                 if (ff->flags & FILE_MD5) {
                     fprintf(fp, "MD5:               ");
@@ -576,17 +598,26 @@ static void LogFilestoreLogCloseMetaFile(File *ff) {
                 }
 #endif
                 break;
+            case FILE_STATE_OPENED:
+                file_state="OPENED";
+                fprintf(fp, "STATE:             OPENED\n");
+                break;
             case FILE_STATE_TRUNCATED:
+                file_state="TRUNCATED";
                 fprintf(fp, "STATE:             TRUNCATED\n");
                 break;
             case FILE_STATE_ERROR:
+                file_state="ERROR";
                 fprintf(fp, "STATE:             ERROR\n");
                 break;
             default:
+                file_state="<UNKNOWN>";
                 fprintf(fp, "STATE:             UNKNOWN\n");
                 break;
         }
         fprintf(fp, "SIZE:              %"PRIu64"\n", ff->size);
+
+        SCLogInfo("Close DONE metafile='%s' status='%s'", metafilename, file_state );
 
         fclose(fp);
     } else {
@@ -639,6 +670,9 @@ static TmEcode LogFilestoreLogWrap(ThreadVars *tv, Packet *p, void *data, Packet
     file_trunc = StreamTcpReassembleDepthReached(p);
 
     FileContainer *ffc = AppLayerGetFilesFromFlow(p->flow, flags);
+    if (ffc != NULL && file_trunc) {
+	    SCLogDebug("ffc %p, WARNING; file_trunc=%d", ffc, file_trunc);
+    }
     SCLogDebug("ffc %p", ffc);
     if (ffc != NULL) {
         File *ff;
@@ -650,6 +684,15 @@ static TmEcode LogFilestoreLogWrap(ThreadVars *tv, Packet *p, void *data, Packet
             }
 
             SCLogDebug("ff %p", ff);
+
+            if (file_trunc && ff->state < FILE_STATE_CLOSED) {
+	            SCLogDebug("ff %p, ffc %p, WARNING; file_trunc=%d", 
+	                      ff, ffc, file_trunc);
+                ff->state = FILE_STATE_TRUNCATED;
+                LogFilestoreLogCloseMetaFile(ff);
+                continue; 
+            }
+
             if (ff->flags & FILE_STORED) {
                 SCLogDebug("stored flag set");
                 continue;
@@ -712,8 +755,11 @@ static TmEcode LogFilestoreLogWrap(ThreadVars *tv, Packet *p, void *data, Packet
 
                 close(file_fd);
 
-                if (file_trunc && ff->state < FILE_STATE_CLOSED)
+                if (file_trunc && ff->state < FILE_STATE_CLOSED) {
+	                SCLogInfo("ff FILE_STATE TRUNCATED set for metafile='%s.meta'", 
+	                          filename );
                     ff->state = FILE_STATE_TRUNCATED;
+                }
 
                 if (ff->state == FILE_STATE_CLOSED ||
                     ff->state == FILE_STATE_TRUNCATED ||

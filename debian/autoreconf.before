@@ -92,9 +92,11 @@ d9816317462f17c12fc50c0440583084  ./libhtp/htp/utf8_decoder.c
 8062c71259216f454fb43eda29294f02  ./libhtp/Makefile.am
 aaa69593159ddecee97207d43a00f28e  ./doxygen.cfg
 b4bd41e5d59b26c0c3a2ddbd114e3014  ./autogen.sh
+363731d42b038f6ba8ec90007aa43704  ./suricata.yaml.in.save
 f49f39b667893e97ada72d53cefe3d1b  ./ChangeLog
 ed4a4d01bec414fbad1bd9a0a053fbbd  ./classification.config
 6755b62492b084af8680ca1c79f82d2c  ./benches/ntohs.c
+d6e00c4a25ee4f5aca1088cd6fdc1159  ./bork.patch
 dd0be61260bb3946f4375a7dc324a5c8  ./m4/libprelude.m4
 3405ef25b06d4b195d16d52b8fef0d0e  ./Makefile.cvs
 0a3c2d15bfd5735d0d9630f10256b8ff  ./contrib/file_processor/README
@@ -310,7 +312,7 @@ d594eaae46085928ca206ba86c3f77e6  ./src/util-unittest.h
 82416f4581612c06ba676fdec54b1dbb  ./src/decode-vlan.h
 1704a5ab2a90bbe84444e215f4712313  ./src/decode-pppoe.c
 aca6210435fdc7ed5e92750248dcd22b  ./src/detect-engine-port.c
-bb6cc0defb724a4eb2243c5e8d65e3c2  ./src/detect-pcre.c
+34c03c8516e7310cede781515b474590  ./src/detect-pcre.c
 da474e8d3245d3d87cfc0fd07c8014de  ./src/detect-noalert.h
 1628b04e3daf295718e65eda2803d596  ./src/defrag-hash.h
 fb22bcb0975e74934a2f5f8794b0c3a7  ./src/alert-prelude.c
@@ -343,7 +345,7 @@ dfce8b46aba37a0108b4838cda31dc58  ./src/detect-http-raw-uri.c
 437b7454b92169c00c92a246ab4f6e6e  ./src/detect-engine-hrhd.c
 6412414d7675b40f4c80553e07491114  ./src/util-mem.h
 9177e5fe95a9b68ffccbd0d47664bda4  ./src/util-spm-bm.h
-bc133c9beb39844a57b935bd33a2cd4f  ./src/detect.h
+4b8f2d10ee64c030c223e447df521803  ./src/detect.h
 bd360845c5056816f34dd5e073677eca  ./src/detect-filemagic.c
 a52005b439c23b02bfb1897258fa7c8d  ./src/util-bloomfilter.c
 1b325506d419a679e2391aac30bb1f90  ./src/util-reference-config.c
@@ -566,7 +568,7 @@ c8a1c3ee66ea10bdb4c20323c1d1ff96  ./src/detect-app-layer-event.c
 7eb39acd4ca78819b01476224af2d4d7  ./src/detect-http-client-body.h
 e63d7c4fcb94b81b8138a6584422f80d  ./src/util-profiling.c
 b6d91fe843c4e7236554502881ebd595  ./src/tm-threads-common.h
-1ab38ebe8fb09c0eecce92e09a9e0c14  ./src/log-filestore.c
+56fc9241185a968144f81bf347c2830c  ./src/log-filestore.c
 992e628b5cff62847d76ecc0c9164dc3  ./src/detect-filename.c
 d27eb182a092a743b309ac1e1f7402ec  ./src/detect-asn1.c
 84aad3fa6322638d4bb5f021123205dc  ./src/alert-pcapinfo.c
@@ -617,7 +619,7 @@ de4ad733f6058df44688c3343ede9a51  ./src/detect-http-hh.h
 67ef3ff795c0a50fdd9ee7c7b619cae3  ./src/flow-private.h
 ecaf8b8521dd59520b4d47004a1ff983  ./src/runmode-napatech.h
 3a6b1fab97e88f315e5d9e45e67fdad4  ./src/output.h
-73347b7f0c09dd8ceb3c10175c4e3136  ./src/detect-flowvar.c
+c1b443e4d80a10c0087b47148ca4305d  ./src/detect-flowvar.c
 71b64f54b404e04dd760309d8529c300  ./src/util-reference-config.h
 1be6e84e37e25a0798dccbfbd5127c80  ./src/detect-flowint.h
 fd2fc5c0936e79c329e281e905db76b4  ./src/util-threshold-config.h
@@ -665,7 +667,7 @@ ff7165c1d6755ec918bac83815f2e3a7  ./src/detect-tos.c
 5d132c119a50ec16384582ba9acbfb57  ./src/detect-mark.c
 d724eed59aaf13f71c12103de23f0c03  ./src/runmode-af-packet.c
 b350d321867966f95fff02d5e1a91a13  ./src/util-bloomfilter-counting.h
-7358bd2dbdfae829eefa8ed4a97eab3e  ./src/flow-var.h
+8a75e07a58a699c2499af7c0f14b74bf  ./src/flow-var.h
 0e1a1e23562aefb0d2cc948938cb95f3  ./src/detect-priority.c
 7bce4a4546224e3a9b6748d0249a67a6  ./src/util-checksum.c
 56308366bd854242e0eaf6f72927e0e0  ./src/flow-alert-sid.h
@@ -679,7 +681,7 @@ b24a858f921cedc843b08b45c5db96c2  ./src/tm-threads.h
 b96151498cb50e20d942de38758e64ce  ./src/detect-http-raw-header.h
 24c71a44e0aac1766e129759d141eea8  ./src/detect-flowbits.h
 816e0cf5f51a8be02aeaa40cc61e5104  ./src/detect-engine-hrhhd.c
-8704684f683684fcf8b377a405738c24  ./src/detect-flowvar.h
+64aacba2169f1a0f247c5adebffff952  ./src/detect-flowvar.h
 0985f3a942eb03210000d9e240c8ea58  ./src/detect-engine-payload.h
 ebb98fe8ed1e925fd8abb1336854b558  ./src/reputation.h
 38cd7413426c5f49d590f026863113ee  ./src/detect-icode.h
@@ -712,13 +714,13 @@ feb9f5775af3ae3a5ea184674412502a  ./src/detect-filesize.h
 0fb91e40ece67abd27edb1b161a20775  ./src/util-hash-lookup3.c
 5e53862ac0c2ebd7380b830978c04a4c  ./src/detect-nocase.h
 b7485a48c9a0ddeb4e77b3387ffe7d0d  ./src/detect-engine-address-ipv4.h
-f15453fbb50da2ed2bee70a255a8542e  ./src/detect.c
+989b43240931c24e0bf8adf26dbab0e2  ./src/detect.c
 5d9c7adfb96b3c78043b7410a8db1b39  ./src/util-cpu.c
 806078e7e05b48095453243eb49bb0f0  ./src/detect-engine-file.c
 c7c1258276222b48ebc49791adf4a79d  ./src/source-nfq.c
 c4cd2fbb5e55588690a2847a7b036a58  ./src/util-ioctl.h
 050f0f0f3ecd298f4bd16fa3e41ef86e  ./src/detect-ttl.c
-daf91b78afc5edf39d14a59ddf6d0a5f  ./src/flow-var.c
+8b974aeab63b2948ec9458d608b20be5  ./src/flow-var.c
 5d99cca012d88eda98ef8b7ab9865973  ./src/detect-itype.h
 3bc852a9feab03de7eb8f73b748ae6b7  ./src/decode-raw.h
 467606bd672ebdeb7ea538b31e3ff159  ./src/util-signal.c
@@ -792,7 +794,8 @@ c4e459993906754ebbb17b7facfa2925  ./src/decode-gre.h
 f57e9f2f38cc48986d4b480cfd6e8ff4  ./src/detect-http-stat-code.c
 765bb2c2c91f52ee94df96ef48eb2227  ./src/Makefile.am
 e6654336b563b17113eca17aa787ea5d  ./src/util-cidr.c
-5cf10b89db7e085ad59b862f945e93b4  ./suricata.yaml.in
+401c77141bda0c7178455a1700d50831  ./test.in
+6cb70e6eb02b74f047d3ba0263e61201  ./suricata.yaml.in
 b90bf53fa5deb17e7ba10b12fecdf540  ./scripts/suricatasc/setup.py
 ea76b763702291867defea3b359a2090  ./scripts/suricatasc/suricatasc.in
 83cbaf1177efc2fd142e0b4ed6222300  ./scripts/suricatasc/Makefile.am
