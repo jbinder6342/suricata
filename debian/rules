@@ -60,7 +60,8 @@ override_dh_installdocs:
 	dh_installdocs --link-doc=suricata-cyos
 
 %:
-	dh  $@ --parallel --with autoreconf
+	#dh  $@ --parallel --with autoreconf
+	dh  $@ --with autoreconf
 
 
 
