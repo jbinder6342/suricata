@@ -32,6 +32,7 @@ install-rules:
 	@test -e "$(DESTDIR)$(e_sysconfrulesdir)stream-events.rules" || install -m 600 "$(top_srcdir)/rules/stream-events.rules" "$(DESTDIR)$(e_sysconfrulesdir)"
 	@test -e "$(DESTDIR)$(e_sysconfrulesdir)smtp-events.rules" || install -m 600 "$(top_srcdir)/rules/smtp-events.rules" "$(DESTDIR)$(e_sysconfrulesdir)"
 	@test -e "$(DESTDIR)$(e_sysconfrulesdir)http-events.rules" || install -m 600 "$(top_srcdir)/rules/http-events.rules" "$(DESTDIR)$(e_sysconfrulesdir)"
+	@test -e "$(DESTDIR)$(e_sysconfrulesdir)files-cyos.rules" || install -m 600 "$(top_srcdir)/rules/files-cyos.rules" "$(DESTDIR)$(e_sysconfrulesdir)"
 #	@test -e "$(DESTDIR)$(e_sysconfrulesdir)http-filestore-events.rules" || install -m 600 "$(top_srcdir)/rules/http-filestore-events.rules" "$(DESTDIR)$(e_sysconfrulesdir)"
 	@echo ""
 	@echo "You can now start suricata by running as root something like '$(bindir)/suricata -c $(e_sysconfdir)/suricata.yaml -i eth0'."

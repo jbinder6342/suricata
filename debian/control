@@ -1,15 +1,45 @@
 Source: suricata
-Section: unknown
+Section: devel
 Priority: extra
-Maintainer: Jim Binder <jbinder@unknown>
-Build-Depends: debhelper (>= 8.0.0), autotools-dev
+Maintainer: Peter Manev <petermanev@gmail.com>
+Build-Depends: debhelper (>= 8.0.0), autotools-dev, pkg-config, libpcre3,libpcre3-dbg, libpcre3-dev, libpcap-dev, libnet1-dev, libyaml-0-2, libyaml-dev, zlib1g, zlib1g-dev, libcap-ng-dev, libcap-ng0, libnss3-dev, libnspr4-dev, python-distutils-extra, python-setuptools, python-instant, python-support, libgeoip1, libgeoip-dev, libnetfilter-queue-dev, libnetfilter-queue1, libnfnetlink-dev, libnfnetlink0, libmagic-dev, libmagic1 
+#, libhtp1, libhtp-dev
 Standards-Version: 3.9.2
-Homepage: <insert the upstream URL, if relevant>
+Homepage: http://www.openinfosecfoundation.org/
 #Vcs-Git: git://git.debian.org/collab-maint/suricata.git
 #Vcs-Browser: http://git.debian.org/?p=collab-maint/suricata.git;a=summary
 
-Package: suricata
+Package: suricata-cyos
+Conflicts: suricata, libhtp1
+Replaces: suricata
+Provides: suricata
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Description: Suricata open source multi-thread IDS/IPS/NSM system (CyOS Fork).
+ Suricata IDS/IPS/NSM - Suricata is a high performance Network IDS, IPS and Network Security Monitoring engine.
+             www.openinfosecfoundation.org/
+             planet.suricata-ids.org/
+             suricata-ids.org/
+ Open Source and owned by a community run non-profit foundation, the Open Information Security Foundation (OISF). Suricata is developed by the OISF, its supporting vendors and the community.
+ This engine is not intended to just replace or emulate the existing tools in the industry, but will bring new ideas and technologies to the field.
+   This new Engine supports:
+             Multi-Threading - provides for extremely fast and flexible operation on multicore systems.
+             File Extraction, MD5 matching - over 4000 types of file recognition/extraction transmitted live over the wire.
+             TLS/SSL certificate matching/logging
+             Automatic Protocol Detection (IPv4/6, TCP, UDP, ICMP, HTTP, TLS, FTP, SMB )
+             Gzip Decompression
+             Fast IP Matching
+             Hardware acceleration on CUDA GPU cards
+ and many more great features -
+ http://suricata-ids.org/features/all-features/
+
+
+Package: suricata-cyos-dbg
+Conflicts: suricata-dbg 
+Replaces: suricata-dbg
+Provides: suricata-dbg 
+Architecture: any
+Section: debug
+Priority: extra
+Depends: suricata (= ${binary:Version}),    ${misc:Depends} 
+Description: Debug symbols for Suricata open source multi-thread IDS/IPS/NSM system (CyOS Fork).
