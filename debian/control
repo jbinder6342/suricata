@@ -41,5 +41,5 @@ Provides: suricata-dbg
 Architecture: any
 Section: debug
 Priority: extra
-Depends: suricata (= ${binary:Version}),    ${misc:Depends} 
+Depends: suricata-cyos (= ${binary:Version}),  ${misc:Depends} 
 Description: Debug symbols for Suricata open source multi-thread IDS/IPS/NSM system (CyOS Fork).
