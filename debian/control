@@ -33,13 +33,15 @@ Description: Suricata open source multi-thread IDS/IPS/NSM system (CyOS Fork).
  and many more great features -
  http://suricata-ids.org/features/all-features/
 
-
-Package: suricata-cyos-dbg
-Conflicts: suricata-dbg 
-Replaces: suricata-dbg
-Provides: suricata-dbg 
-Architecture: any
-Section: debug
-Priority: extra
-Depends: suricata-cyos (= ${binary:Version}),  ${misc:Depends} 
-Description: Debug symbols for Suricata open source multi-thread IDS/IPS/NSM system (CyOS Fork).
+# #
+# # Don't need this till we add symbol stripping in rules 
+# #
+# Package: suricata-cyos-dbg
+# Conflicts: suricata-dbg 
+# Replaces: suricata-dbg
+# Provides: suricata-dbg 
+# Architecture: any
+# Section: debug
+# Priority: extra
+# Depends: suricata-cyos (= ${binary:Version}),  ${misc:Depends} 
+# Description: Debug symbols for Suricata open source multi-thread IDS/IPS/NSM system (CyOS Fork).

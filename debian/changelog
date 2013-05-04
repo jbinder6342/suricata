@@ -1,4 +1,4 @@
-suricata (1.4.1-15ubuntu15cyos1) precise; urgency=low
+suricata (1.4.1-15cyos1.0) precise; urgency=low
 
   * Non-maintainer upload.
 		1.4.1.cyos1 -- 2013-05-03
