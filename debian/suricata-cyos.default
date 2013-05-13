@@ -1,0 +1,11 @@
+# Defaults for suricata-cyos initscript
+# sourced by /etc/init.d/suricata-cyos
+# installed at /etc/default/suricata-cyos by the maintainer scripts
+
+#
+# This is a POSIX shell fragment
+#
+DAEMON_ENABLED="yes"
+
+# Additional options that are passed to the Daemon.
+DAEMON_OPTS="--af-packet=eth1 "

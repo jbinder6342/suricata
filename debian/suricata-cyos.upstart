@@ -1,0 +1,101 @@
+description "CyOS-httpproxysrv" 
+author      "builder@cyphort.com"
+
+# Make sure we start before an interface receives traffic
+# start on ( runlevel [2345]
+#       and ( starting network-interface
+#       or starting network-manager
+#       or starting networking 
+#       or static-network-up ) )
+
+start on  ( cyos-cortex-start-event ) 
+#start on filesystem or runlevel [2345]
+
+stop on ( runlevel [!2345] or deconfiguring-networking or cyos-cortex-stop-event or stopping postgresql )
+
+respawn
+#respawn limit 60 240
+umask 022
+
+#normal exit 0 TERM PIPE
+normal exit 0 TERM
+
+#expect fork 
+
+#kill timeout 60
+
+env DAEMON_LOGDIR=/var/log/suricata
+env CYOS_USER=amauser 
+
+chdir /home/amauser
+
+#setgid $CYOS_USER
+#setuid $CYOS_USER 
+
+## Uncomment out and make sure /var/log/upstart exists to get logging in cyos-chainheur.log 
+#  ...see man 5 init. 
+console log
+#console output
+
+pre-start script
+
+log_msg()
+        {
+        logger -is -t $UPSTART_JOB -- "PRE-START: $@" 
+        return 0 
+        }
+#id
+# ensure we have access to the log dir. 
+#
+log_msg "Install/Verify suricata logdir..." 
+
+[ -r /etc/default/$UPSTART_JOB ] && . /etc/default/$UPSTART_JOB || { stop; log_msg "ERROR; missing /etc/default/$UPSTART_JOB"; exit 0; }
+/usr/bin/install -o $CYOS_USER -g $CYOS_USER -m 750 -d "$DAEMON_LOGDIR"
+
+log_msg "setup variables, DAEMON_OPTS='$DAEMON_OPTS'" 
+log_msg "ENABLED=$DAEMON_ENABLED" 
+[ "x$DAEMON_ENABLED" = "xyes" ] || { stop; log_msg "ERROR; $UPSTART_JOB disabled"; exit 0;} 
+
+#exit 0
+end script
+
+pre-stop script
+#id
+logger -is -t "$UPSTART_JOB" "status -- pre-stop" 
+
+exit 0
+end script 
+
+post-stop script
+#id 
+logger -is -t "$UPSTART_JOB" "status -- post-stop" 
+
+exit 0 
+end script
+
+#
+# Run the job
+# 
+script
+
+log_msg()
+        {
+        logger -is -t $UPSTART_JOB -- "START: $@" 
+        return 0
+        }
+
+uname=$(id -un) 
+log_msg "running as: $uname"
+
+# get our defaults
+#
+. /etc/default/suricata-cyos
+
+log_msg "starting suricata; DAEMON_OPTS='$DAEMON_OPTS'" 
+
+suricata $DAEMON_OPTS 
+
+end script
+
+
+

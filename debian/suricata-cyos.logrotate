@@ -1,0 +1,16 @@
+/var/log/suricata.log /var/log/suricata/*.log {
+	daily 
+	missingok
+	size 10M
+	rotate 10
+	compress
+	delaycompress
+	notifempty
+	create 640 amauser amauser
+    sharedscripts
+    postrotate
+        /usr/bin/killall -HUP suricata
+    endscript
+
+}
+
