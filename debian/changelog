@@ -1,3 +1,11 @@
+suricata (1.4.1-15cyos1.2) precise; urgency=low
+
+  * Non-maintainer upload.
+  * Merge of master-1.4.x 
+		- Removed Signature->order_id and replaced it with Signature->num.
+
+ -- Jim Binder <jbinder@cartman>  Wed, 22 May 2013 12:11:59 -0700
+
 suricata (1.4.1-15cyos1.1) precise; urgency=low
 
   * Added logrotate and upstart support 
