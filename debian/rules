@@ -48,7 +48,7 @@ override_dh_strip:
  
 override_dh_installinit: 
 	$(info CURDIR=$(CURDIR), DESTDIR=$(DESTDIR), MOD_NAME=$(MOD_NAME))
-	dh_installinit --no-start
+	dh_installinit --restart-after-upgrade  --upstart-only 
 
 override_dh_install: 
 	$(info CURDIR=$(CURDIR), DESTDIR=$(DESTDIR), MOD_NAME=$(MOD_NAME))

@@ -8,10 +8,10 @@ author      "builder@cyphort.com"
 #       or starting networking 
 #       or static-network-up ) )
 
-start on  ( cyos-cortex-start-event ) 
+start on  ( cyos-cortex-start-event or suricata-cyos-start-event ) 
 #start on filesystem or runlevel [2345]
 
-stop on ( runlevel [!2345] or deconfiguring-networking or cyos-cortex-stop-event or stopping postgresql )
+stop on ( runlevel [!2345] or deconfiguring-networking or suricata-cyos-stop-event or cyos-cortex-stop-event )
 
 respawn
 #respawn limit 60 240
@@ -50,12 +50,12 @@ log_msg()
 log_msg "Install & verify suricata logdir..." 
 
 [ -r /etc/default/$UPSTART_JOB ] && . /etc/default/$UPSTART_JOB || { stop; log_msg "ERROR; missing /etc/default/$UPSTART_JOB"; exit 0; }
-/usr/bin/install -o $CYOS_USER -g $CYOS_USER -m 750 -d "$SURICATA_CYOS_DAEMON_LOGDIR"
 
 log_msg "setup variables, SURICATA_CYOS_DAEMON_OPTS='$SURICATA_CYOS_DAEMON_OPTS'" 
 log_msg "ENABLED=$SURICATA_CYOS_DAEMON_ENABLED" 
 [ "x$SURICATA_CYOS_DAEMON_ENABLED" = "xyes" ] || { stop; log_msg "ERROR; $UPSTART_JOB disabled"; exit 0;} 
 
+/usr/bin/install -o $CYOS_USER -g $CYOS_USER -m 750 -d "$SURICATA_CYOS_DAEMON_LOGDIR"
 #exit 0
 end script
 
