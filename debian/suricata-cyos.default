@@ -5,7 +5,7 @@
 #
 # This is a POSIX shell fragment
 #
-DAEMON_ENABLED="yes"
+SURICATA_CYOS_DAEMON_ENABLED="no"
 
 # Additional options that are passed to the Daemon.
-DAEMON_OPTS="--af-packet=eth1 "
+SURICATA_CYOS_DAEMON_OPTS="--af-packet=eth1"

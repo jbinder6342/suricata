@@ -1,4 +1,4 @@
-description "CyOS-httpproxysrv" 
+description "suricata-cyos" 
 author      "builder@cyphort.com"
 
 # Make sure we start before an interface receives traffic
@@ -24,7 +24,7 @@ normal exit 0 TERM
 
 #kill timeout 60
 
-env DAEMON_LOGDIR=/var/log/suricata
+env SURICATA_CYOS_DAEMON_LOGDIR=/var/log/suricata
 env CYOS_USER=amauser 
 
 chdir /home/amauser
@@ -47,14 +47,14 @@ log_msg()
 #id
 # ensure we have access to the log dir. 
 #
-log_msg "Install/Verify suricata logdir..." 
+log_msg "Install & verify suricata logdir..." 
 
 [ -r /etc/default/$UPSTART_JOB ] && . /etc/default/$UPSTART_JOB || { stop; log_msg "ERROR; missing /etc/default/$UPSTART_JOB"; exit 0; }
-/usr/bin/install -o $CYOS_USER -g $CYOS_USER -m 750 -d "$DAEMON_LOGDIR"
+/usr/bin/install -o $CYOS_USER -g $CYOS_USER -m 750 -d "$SURICATA_CYOS_DAEMON_LOGDIR"
 
-log_msg "setup variables, DAEMON_OPTS='$DAEMON_OPTS'" 
-log_msg "ENABLED=$DAEMON_ENABLED" 
-[ "x$DAEMON_ENABLED" = "xyes" ] || { stop; log_msg "ERROR; $UPSTART_JOB disabled"; exit 0;} 
+log_msg "setup variables, SURICATA_CYOS_DAEMON_OPTS='$SURICATA_CYOS_DAEMON_OPTS'" 
+log_msg "ENABLED=$SURICATA_CYOS_DAEMON_ENABLED" 
+[ "x$SURICATA_CYOS_DAEMON_ENABLED" = "xyes" ] || { stop; log_msg "ERROR; $UPSTART_JOB disabled"; exit 0;} 
 
 #exit 0
 end script
@@ -89,11 +89,11 @@ log_msg "running as: $uname"
 
 # get our defaults
 #
-. /etc/default/suricata-cyos
+[ -r /etc/default/suricata-cyos ] && . /etc/default/suricata-cyos || { stop; log_msg "ERROR; missing default file..."; exit 1;} 
 
-log_msg "starting suricata; DAEMON_OPTS='$DAEMON_OPTS'" 
+log_msg "starting suricata-cyos; SURICATA_CYOS_DAEMON_OPTS='$SURICATA_CYOS_DAEMON_OPTS'" 
 
-suricata $DAEMON_OPTS 
+suricata $SURICATA_CYOS_DAEMON_OPTS 
 
 end script
 
