@@ -31,3 +31,4 @@ alert http any any -> any any (msg:"FILE magicType -- text/html"; filemagic:"tex
 
 alert http any any -> any any (msg:"FILE magicType -- application/dosexec detected"; filemagic:"application/dosexec"; filestore; sid:13001; rev:1;)
 alert http any any -> any any (msg:"FILE magicType -- application/x-dosexec detected"; filemagic:"application/x-dosexec"; filestore; sid:13002; rev:1;)
+alert http any any -> any any (msg:"FILE magicType -- application/x-shockwave-flash detected"; filemagic:"application/x-shockwave-flash"; filestore; sid:13003; rev:1;)
