@@ -617,7 +617,7 @@ static void LogFilestoreLogCloseMetaFile(File *ff) {
         }
         fprintf(fp, "SIZE:              %"PRIu64"\n", ff->size);
 
-        SCLogInfo("Close DONE metafile='%s' status='%s'", metafilename, file_state );
+        SCLogInfo("Close DONE metafile='%s' status='%s', size='%"PRIu64"'", metafilename, file_state, ff->size );
 
         fclose(fp);
     } else {
