@@ -286,6 +286,10 @@ af-packet:
     # will not be copied.
     #copy-mode: ips
     #copy-iface: eth1
+    buffer-size: 512mb
+    #ring-size: 4096 
+    use-mmap: no
+    checksum-checks: no
   - interface: eth1
     #threads: 2
     cluster-id: 98
@@ -293,9 +297,9 @@ af-packet:
     defrag: yes
     # buffer-size: 32768
     # disable-promisc: no
-    buffer-size: 256mb
+    buffer-size: 512mb
     #ring-size: 4096 
-    use-mmap: yes
+    use-mmap: no
     checksum-checks: no
   # Put default values here
   - interface: default
@@ -305,9 +309,9 @@ af-packet:
     defrag: yes
     # buffer-size: 32768
     # disable-promisc: no
-    buffer-size: 256mb
+    buffer-size: 512mb
     #ring-size: 4096 
-    use-mmap: yes
+    use-mmap: no
     checksum-checks: no
 
 # You can specify a threshold config file by setting "threshold-file"
@@ -614,7 +618,7 @@ stream:
   reassembly:
     memcap: 512mb
     #depth: 1mb                  # reassemble 1mb into a stream
-    depth: 10mb                  # reassemble 10mb into a stream
+    depth: 32mb                  # reassemble 10mb into a stream
     toserver-chunk-size: 4096
     toclient-chunk-size: 4096
 
@@ -977,8 +981,8 @@ libhtp:
      # it's in bytes.
      #request-body-limit: 3072
      #response-body-limit: 3072
-     request-body-limit: 0
-     response-body-limit: 0
+     request-body-limit: 32mb
+     response-body-limit: 32mb
 
 
      # inspection limits
@@ -1000,8 +1004,8 @@ libhtp:
          # it's in bytes.
          #request-body-limit: 4096
          #response-body-limit: 4096
-         request-body-limit: 0
-         response-body-limit: 0
+         request-body-limit: 32mb
+         response-body-limit: 32mb
 
          double-decode-path: no
          double-decode-query: no
@@ -1015,8 +1019,8 @@ libhtp:
          # it's in bytes.
          #request-body-limit: 4096
          #response-body-limit: 4096
-         request-body-limit: 0
-         response-body-limit: 0
+         request-body-limit: 32mb
+         response-body-limit: 32mb
          double-decode-path: no
          double-decode-query: no
 
