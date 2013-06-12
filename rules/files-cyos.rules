@@ -6,18 +6,18 @@
 #---------------------
 # cyos: Store all "application types" 
 #
-alert http any any -> any any (msg:"FILE store all"; flow:established; filestore; sid:1; rev:10000;)
+#alert http any any -> any any (msg:"FILE store all"; flow:established; filestore; sid:1; rev:10000;)
 
 #---------------------
 # specific types 
 #
-#alert http any any -> any any (msg:"FILE EXE file claimed"; fileext:"exe"; filestore; sid:10002; rev:1;)
-#alert http any any -> any any (msg:"FILE PDF file claimed"; fileext:"pdf"; filestore; sid:10003; rev:1;)
-#alert http any any -> any any (msg:"FILE SWF file claimed"; fileext:"swf"; filestore; sid:10004; rev:1;)
+alert http any any -> any any (msg:"FILE EXE file claimed"; fileext:"exe"; filestore; sid:10002; rev:1;)
+alert http any any -> any any (msg:"FILE PDF file claimed"; fileext:"pdf"; filestore; sid:10003; rev:1;)
+alert http any any -> any any (msg:"FILE SWF file claimed"; fileext:"swf"; filestore; sid:10004; rev:1;)
 
-#alert http any any -> any any (msg:"FILE PE32 detected"; flow:established; filemagic:"PE32"; filestore; sid:11005; rev:1;)
-#alert http any any -> any any (msg:"FILE PDF detected"; flow:established; filemagic:"PDF document"; filestore; sid:11006; rev:1;)
-#alert http any any -> any any (msg:"FILE Flash detected"; flow:established; filemagic:"Macromedia*Flash*"; filestore; sid:11004; rev:1;)
+alert http any any -> any any (msg:"FILE PE32 detected"; flow:established; filemagic:"PE32"; filestore; sid:11005; rev:1;)
+alert http any any -> any any (msg:"FILE PDF detected"; flow:established; filemagic:"PDF document"; filestore; sid:11006; rev:1;)
+alert http any any -> any any (msg:"FILE Flash detected"; flow:established; filemagic:"Macromedia*Flash*"; filestore; sid:11004; rev:1;)
 
 # alert http any any -> any any (msg:"FILE magicType -- applicaiton";  filemagic:"application/"; flow:established; filestore; sid:12000; rev:1;)
 # example of excluding a domain. 
