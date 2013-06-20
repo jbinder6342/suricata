@@ -236,7 +236,7 @@ af-packet:
   - interface: eth0
     # Number of receive threads (>1 will enable experimental flow pinned
     # runmode)
-    threads: 1
+    #threads: 1
     # Default clusterid.  AF_PACKET will load balance packets based on flow.
     # All threads/processes that will participate need to have the same
     # clusterid.
@@ -252,7 +252,7 @@ af-packet:
     # to yes, the kernel will do the needed defragmentation before sending the packets.
     defrag: yes
     # To use the ring feature of AF_PACKET, set 'use-mmap' to yes
-    use-mmap: yes
+    #use-mmap: yes
     # Ring size will be computed with respect to max_pending_packets and number
     # of threads. You can set manually the ring size in number of packets by setting
     # the following value. If you are using flow cluster-type and have really network
@@ -290,8 +290,10 @@ af-packet:
     #ring-size: 4096 
     use-mmap: no
     checksum-checks: no
+    threads: 4 
+    defrag: yes 
   - interface: eth1
-    #threads: 2
+    threads: 4
     cluster-id: 98
     cluster-type: cluster_flow
     defrag: yes
@@ -303,7 +305,7 @@ af-packet:
     checksum-checks: no
   # Put default values here
   - interface: default
-    #threads: 2
+    threads: 4
     cluster-id: 96
     cluster-type: cluster_flow
     defrag: yes

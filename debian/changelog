@@ -1,3 +1,10 @@
+suricata (1.4.1-15cyos1.3) precise; urgency=low
+
+  * Non-maintainer upload.
+  * Merge with upstream changes and config tweaks.
+
+ -- Jim Binder <jbinder@cartman>  Wed, 19 Jun 2013 17:46:48 -0700
+
 suricata (1.4.1-15cyos1.2) precise; urgency=low
 
   * Non-maintainer upload.
